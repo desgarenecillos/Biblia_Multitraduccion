@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Biblia Multi-Traducción</title>
+<!-- Librería para crear archivos .mbe (ZIP) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#6a1b9a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="application-name" content="Biblia MT">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+
+<style>
+  :root { --text-size: 1.05em; --primary: #6a1b9a; --primary-light: #f3e5f5; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f5f5f7; color: #1a1a2e; min-height: 100vh; padding-bottom: 80px; font-size: var(--text-size); }
+  
+  header { background: linear-gradient(135deg, #6a1b9a 0%, #4a148c 100%); color: white; padding: 12px 15px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+  h1 { font-size: 0.9em; margin-bottom: 10px; text-align: center; opacity: 0.9; font-weight: 500; }
+  
+  .selectors { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+  select { padding: 8px; border: none; border-radius: 6px; background: rgba(255,255,255,0.15); color: white; font-size: 0.85em; }
+  select option { background: #6a1b9a; color: white; }
+
+  .search-box { display: flex; gap: 8px; margin-top: 10px; }
+  .search-box input { flex: 1; padding: 8px; border: none; border-radius: 6px; font-size: 0.9em; }
+  .search-box button { padding: 8px 12px; border: none; border-radius: 6px; background: #e94560; color: white; font-weight: bold; cursor: pointer; }
+
+  .nav-buttons { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; background: white; border-bottom: 1px solid #e0e0e0; position: sticky; top: 125px; z-index: 99; gap: 8px; flex-wrap: wrap; }
+  button.nav-btn { padding: 8px 10px; border: none; border-radius: 6px; background: #6a1b9a; color: white; cursor: pointer; font-size: 0.8em; font-weight: 600; }
+  button.nav-btn:disabled { background: #ccc; }
+  button.nav-btn.active { background: #8e24aa; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+  button.nav-btn.settings { background: #546e7a; }
+
+  #content { padding: 15px; line-height: 1.8; max-width: 800px; margin: 0 auto; }
+  
+  .verse { display: inline; padding: 2px 4px; border-radius: 4px; cursor: pointer; transition: background 0.2s; position: relative; }
+  .verse:active { transform: scale(0.98); }
+  .verse-num { color: #6a1b9a; font-weight: bold; font-size: 0.75em; vertical-align: super; margin-right: 3px; user-select: none; display: inline-flex; align-items: center; gap: 2px; }
+  
+  .verse.hl-orange { background-color: #ffcc80; }
+  .verse.hl-yellow { background-color: #fff9c4; }
+  .verse.hl-green { background-color: #c8e6c9; }
+  .verse.hl-blue { background-color: #bbdefb; }
+  .verse.hl-purple { background-color: #e1bee7; }
+  
+  .verse.scroll-to { outline: 3px solid white; outline-offset: 2px; box-shadow: 0 0 0 3px #6a1b9a; animation: pulseBorder 1s ease-in-out; }
+  @keyframes pulseBorder { 0%, 100% { box-shadow: 0 0 0 3px #6a1b9a; } 50% { box-shadow: 0 0 0 6px #6a1b9a; } }
+
+  .note-indicator { cursor: pointer; font-size: 0.9em; margin-left: 2px; vertical-align: super; }
+  .note-indicator:hover { transform: scale(1.2); }
+
+  .version-info { text-align: center; padding: 12px; background: #e3f2fd; color: #0f3460; font-size: 0.9em; border-radius: 6px; margin-bottom: 20px; font-weight: 600; }
+  .loading { text-align: center; padding: 40px; color: #666; }
+  .spinner { border: 3px solid #f3f3f3; border-top: 3px solid #6a1b9a; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 15px; }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+  .color-toolbar { position: absolute; background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); padding: 8px; display: none; z-index: 150; animation: fadeIn 0.2s; }
+  .color-toolbar.active { display: flex; gap: 6px; }
+  @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+  .color-btn { width: 36px; height: 36px; border-radius: 50%; border: 2px solid #ddd; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.2em; }
+  .color-btn:active { transform: scale(0.9); }
+  .color-btn.orange { background: #ffcc80; } .color-btn.yellow { background: #fff9c4; } .color-btn.green { background: #c8e6c9; }
+  .color-btn.blue { background: #bbdefb; } .color-btn.purple { background: #e1bee7; } .color-btn.delete { background: #ffcdd2; }
+  .color-btn.note { background: #e3f2fd; border-color: #6a1b9a; }
+
+  /* MODALES GENERALES */
+  .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 200; justify-content: center; align-items: center; backdrop-filter: blur(3px); }
+  .modal.active { display: flex; }
+  .modal-content { background: white; width: 95%; max-width: 600px; max-height: 90vh; border-radius: 12px; padding: 20px; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+  .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+  .close-modal { background: none; border: none; font-size: 1.8em; cursor: pointer; color: #666; }
+
+  /* EDITOR DE NOTAS (PANTALLA COMPLETA) */
+  .note-editor-modal .modal-content { max-width: 95%; height: 95vh; display: flex; flex-direction: column; }
+  .note-editor-modal input, .note-editor-modal textarea { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 6px; font-family: inherit; }
+  .note-editor-modal input.title-input { font-size: 1.3em; font-weight: bold; border: none; border-bottom: 2px solid #6a1b9a; outline: none; }
+  .note-editor-modal textarea { flex: 1; resize: none; font-size: 1em; line-height: 1.6; }
+  .note-editor-modal .tags-input { font-size: 0.9em; color: #666; }
+  .note-editor-modal .editor-actions { display: flex; gap: 10px; margin-top: 10px; }
+  .note-editor-modal button { flex: 1; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+  .btn-save { background: #6a1b9a; color: white; }
+  .btn-cancel { background: #e0e0e0; color: #333; }
+  .btn-delete-note { background: #e94560; color: white; }
+
+  /* SINTAXIS EN NOTAS RENDERIZADAS */
+  .rendered-note a { color: #1e88e5; text-decoration: underline; }
+  .rendered-note .verse-ref-link { color: #6a1b9a; font-weight: bold; cursor: pointer; background: #f3e5f5; padding: 2px 6px; border-radius: 4px; }
+  .rendered-note .verse-ref-link:hover { background: #e1bee7; }
+  .rendered-note img { max-width: 100%; border-radius: 8px; margin: 10px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+
+  /* CONFIGURACIÓN */
+  .settings-group { margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-radius: 8px; }
+  .settings-group h3 { margin-bottom: 10px; color: #6a1b9a; font-size: 1em; }
+  .settings-group button { width: 100%; padding: 10px; margin-top: 8px; border: none; border-radius: 6px; background: #6a1b9a; color: white; cursor: pointer; }
+  .settings-group input[type="range"] { width: 100%; }
+
+  /* MODAL DE REFERENCIAS BÍBLICAS */
+  .ref-modal-verse { padding: 10px; border-bottom: 1px solid #eee; }
+  .ref-modal-verse .version-tag { display: inline-block; background: #6a1b9a; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.75em; margin-right: 8px; }
+  .ref-modal-verse .verse-text { font-size: 0.95em; line-height: 1.5; }
+
+  /* PANEL DE CONTENIDO (TEMAS) */
+  .content-panel { background: white; border-radius: 8px; padding: 15px; margin-top: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+  .content-panel h3 { color: #6a1b9a; margin-bottom: 15px; font-size: 1.1em; border-bottom: 2px solid #6a1b9a; padding-bottom: 8px; }
+  .topic-level-0 { margin: 20px 0 15px 0; padding: 10px 15px; background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%); border-left: 4px solid #6a1b9a; border-radius: 6px; }
+  .topic-level-0 .topic-title { font-size: 1.1em; font-weight: 700; color: #4a148c; }
+  .topic-level-1 { margin: 15px 0 10px 15px; padding: 12px; background: #f5f5f5; border-left: 3px solid #1e88e5; border-radius: 6px; border: 2px dashed transparent; transition: all 0.3s; }
+  .topic-level-1.expanded { border: 2px dashed #1e88e5; background: #e3f2fd; }
+  .topic-level-1 .topic-title, .topic-level-2 .topic-title { font-weight: 600; margin-bottom: 8px; cursor: pointer; }
+  .topic-level-2 { margin: 10px 0 10px 25px; padding: 10px; background: #fafafa; border-left: 2px solid #43a047; border-radius: 4px; }
+  .topic-preview { font-size: 0.9em; color: #555; line-height: 1.6; margin-bottom: 8px; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+  .topic-preview.expanded { -webkit-line-clamp: unset; }
+  .topic-verses { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .verse-link { display: inline-block; padding: 4px 10px; background: #6a1b9a; color: white; border-radius: 4px; text-decoration: none; font-size: 0.85em; cursor: pointer; }
+  .toggle-btn { display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; background: #1e88e5; color: white; border: none; border-radius: 4px; font-size: 0.85em; cursor: pointer; margin-top: 8px; }
+
+  /* LISTA DE NOTAS / MARCADORES */
+  .list-item { padding: 12px; border-bottom: 1px solid #f0f0f0; cursor: pointer; display: flex; align-items: center; }
+  .list-item:hover { background: #f9f9f9; }
+  .list-item-ref { font-weight: bold; color: #6a1b9a; font-size: 0.95em; flex: 1; }
+  .list-item-delete { color: #e94560; cursor: pointer; font-weight: bold; padding: 5px 10px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>📖 Biblia Multi-Traducción</h1>
+  <div class="selectors">
+    <select id="version"></select>
+    <select id="book"></select>
+    <select id="chapter"></select>
+  </div>
+  <div class="search-box">
+    <input type="text" id="searchInput" placeholder="Buscar en todas las versiones...">
+    <button onclick="performSearch()">🔍</button>
+  </div>
+</header>
+
+<div class="nav-buttons">
+  <button class="nav-btn" id="prevBtn" onclick="prevChapter()">◀ Ant</button>
+  <button class="nav-btn" onclick="toggleModal('bookmarksModal')">🔖</button>
+  <button class="nav-btn" onclick="toggleModal('notesListModal')">📄</button>
+  <button class="nav-btn" id="contentBtn" onclick="toggleContentPanel()">📑</button>
+  <button class="nav-btn" id="nextBtn" onclick="nextChapter()">Sig ▶</button>
+  <button class="nav-btn settings" onclick="toggleModal('settingsModal')">⚙️</button>
+</div>
+
+<div id="content"><div class="loading"><div class="spinner"></div>Cargando...</div></div>
+
+<!-- TOOLBAR DE COLORES Y NOTA -->
+<div id="colorToolbar" class="color-toolbar">
+  <div class="color-btn orange" onclick="applyColor('hl-orange')">🟠</div>
+  <div class="color-btn yellow" onclick="applyColor('hl-yellow')">🟡</div>
+  <div class="color-btn green" onclick="applyColor('hl-green')">🟢</div>
+  <div class="color-btn blue" onclick="applyColor('hl-blue')">🔵</div>
+  <div class="color-btn purple" onclick="applyColor('hl-purple')">🟣</div>
+  <div class="color-btn delete" onclick="applyColor('')">🗑️</div>
+  <div class="color-btn note" onclick="openNoteEditorForCurrent()">📄</div>
+</div>
+
+<!-- MODAL EDITOR DE NOTAS -->
+<div id="noteEditorModal" class="modal note-editor-modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 id="noteEditorTitle">Editar Nota</h2>
+      <button class="close-modal" onclick="closeModal('noteEditorModal')">&times;</button>
+    </div>
+    <input type="text" id="noteTitle" class="title-input" placeholder="Título de la nota...">
+    <textarea id="noteContent" placeholder="Escribe tu nota aquí...&#10;&#10;Sintaxis:&#10;(Texto$https://url.com)&#10;(+Génesis 1:1)&#10;(+Génesis 1:1@nwtsty)&#10;[https://url.com/imagen.jpg#100x=]"></textarea>
+    <input type="text" id="noteTags" class="tags-input" placeholder="Etiquetas (separadas por comas)..." list="tagsList">
+    <datalist id="tagsList">
+      <option value="estudio">
+      <option value="predicación">
+      <option value="familia">
+    </datalist>
+    <div class="editor-actions">
+      <button class="btn-cancel" onclick="closeModal('noteEditorModal')">Cancelar</button>
+      <button class="btn-delete-note" id="btnDeleteNote" onclick="deleteCurrentNote()" style="display:none;">Eliminar</button>
+      <button class="btn-save" onclick="saveCurrentNote()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL LISTA DE NOTAS -->
+<div id="notesListModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Mis Notas</h2>
+      <button class="close-modal" onclick="closeModal('notesListModal')">&times;</button>
+    </div>
+    <div id="notesListBody"></div>
+  </div>
+</div>
+
+<!-- MODAL LISTA DE MARCADORES -->
+<div id="bookmarksModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Mis Marcadores</h2>
+      <button class="close-modal" onclick="closeModal('bookmarksModal')">&times;</button>
+    </div>
+    <div id="bookmarksListBody"></div>
+  </div>
+</div>
+
+<!-- MODAL REFERENCIAS BÍBLICAS (PARSEADAS) -->
+<div id="verseRefModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 id="verseRefTitle">Referencia</h2>
+      <button class="close-modal" onclick="closeModal('verseRefModal')">&times;</button>
+    </div>
+    <div id="verseRefBody"></div>
+  </div>
+</div>
+
+<!-- MODAL CONFIGURACIÓN -->
+<div id="settingsModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Configuración</h2>
+      <button class="close-modal" onclick="closeModal('settingsModal')">&times;</button>
+    </div>
+    <div class="settings-group">
+      <h3>Tamaño de texto</h3>
+      <input type="range" id="textSizeRange" min="0.8" max="1.5" step="0.1" value="1.05" oninput="updateTextSize(this.value)">
+      <p style="text-align:center; margin-top:5px; color:#666;" id="textSizeLabel">105%</p>
+    </div>
+    <div class="settings-group">
+      <h3>Datos (Exportar / Importar)</h3>
+      <button onclick="exportData()">📤 Exportar datos (.mbe)</button>
+      <button onclick="document.getElementById('importFile').click()" style="background:#1e88e5; margin-top:10px;">📥 Importar datos (.mbe)</button>
+      <input type="file" id="importFile" accept=".mbe" style="display:none" onchange="importData(this)">
+   
+</div>
+  </div>
+</div>
+
+<script>
+const VERSIONES = {
+  "Rvr60": "Reina Valera 1960", "dhh": "Dios Habla Hoy", "lbla": "LBLA",
+  "nbla": "Nueva Biblia Latinoamericana", "ntv": "Nueva Traducción Viviente",
+  "nvi": "Nueva Versión Internacional", "nwtsty": "TNM Edición de Estudio",
+  "rva2015": "Reina Valera Actualizada", "rvc": "Reina Valera Contemporánea", "tla": "TLA"
+};
+
+const LIBROS = [
+  {id:"01gn", name:"Génesis", caps:50}, {id:"02ex", name:"Éxodo", caps:40},
+  {id:"03lv", name:"Levítico", caps:27}, {id:"04nm", name:"Números", caps:36},
+  {id:"05dt", name:"Deuteronomio", caps:34}, {id:"06js", name:"Josué", caps:24},
+  {id:"07jud", name:"Jueces", caps:21}, {id:"08rt", name:"Rut", caps:4},
+  {id:"091sm", name:"1 Samuel", caps:31}, {id:"102sm", name:"2 Samuel", caps:24},
+  {id:"111kgs", name:"1 Reyes", caps:22}, {id:"122kgs", name:"2 Reyes", caps:25},
+  {id:"131ch", name:"1 Crónicas", caps:29}, {id:"142ch", name:"2 Crónicas", caps:36},
+  {id:"15ezr", name:"Esdras", caps:10}, {id:"16ne", name:"Nehemías", caps:13},
+  {id:"17et", name:"Ester", caps:10}, {id:"18job", name:"Job", caps:42},
+  {id:"19ps", name:"Salmos", caps:150}, {id:"20prv", name:"Proverbios", caps:31},
+  {id:"21ec", name:"Eclesiastés", caps:12}, {id:"22so", name:"Cantares", caps:8},
+  {id:"23is", name:"Isaías", caps:66}, {id:"24jr", name:"Jeremías", caps:52},
+  {id:"25lm", name:"Lamentaciones", caps:5}, {id:"26ez", name:"Ezequiel", caps:48},
+  {id:"27dn", name:"Daniel", caps:12}, {id:"28ho", name:"Oseas", caps:14},
+  {id:"29jl", name:"Joel", caps:3}, {id:"30am", name:"Amós", caps:9},
+  {id:"31ob", name:"Abdías", caps:1}, {id:"32jn", name:"Jonás", caps:4},
+  {id:"33mi", name:"Miqueas", caps:7}, {id:"34na", name:"Nahúm", caps:3},
+  {id:"35hk", name:"Habacuc", caps:3}, {id:"36zp", name:"Sofonías", caps:3},
+  {id:"37hg", name:"Ageo", caps:2}, {id:"38zc", name:"Zacarías", caps:14},
+  {id:"39ml", name:"Malaquías", caps:4}, {id:"40mt", name:"Mateo", caps:28},
+  {id:"41mk", name:"Marcos", caps:16}, {id:"42lk", name:"Lucas", caps:24},
+  {id:"43jo", name:"Juan", caps:21}, {id:"44act", name:"Hechos", caps:28},
+  {id:"45rm", name:"Romanos", caps:16}, {id:"461co", name:"1 Corintios", caps:16},
+  {id:"472co", name:"2 Corintios", caps:13}, {id:"48gl", name:"Gálatas", caps:6},
+  {id:"49eph", name:"Efesios", caps:6}, {id:"50ph", name:"Filipenses", caps:4},
+  {id:"51cl", name:"Colosenses", caps:4}, {id:"521ts", name:"1 Tesalonicenses", caps:5},
+  {id:"532ts", name:"2 Tesalonicenses", caps:3}, {id:"541tm", name:"1 Timoteo", caps:6},
+  {id:"552tm", name:"2 Timoteo", caps:4}, {id:"56tt", name:"Tito", caps:3},
+  {id:"57phm", name:"Filemón", caps:1}, {id:"58hb", name:"Hebreos", caps:13},
+  {id:"59jm", name:"Santiago", caps:5}, {id:"601pe", name:"1 Pedro", caps:5},
+  {id:"612pe", name:"2 Pedro", caps:3}, {id:"621jo", name:"1 Juan", caps:5},
+  {id:"632jo", name:"2 Juan", caps:1}, {id:"643jo", name:"3 Juan", caps:1},
+  {id:"65jd", name:"Judas", caps:1}, {id:"66re", name:"Apocalipsis", caps:22}
+];
+
+let state = { version: "nwtsty", bookIdx: 0, chapter: 1 };
+let currentBookData = null;
+let currentTopics = [];
+let highlights = {};
+let notes = {};
+let selectedVerseId = null;
+let contentPanelVisible = false;
+
+const DB_NAME = "BibliaMT_DB";
+const DB_VERSION = 2; // Actualizado para incluir notas
+let db;
+
+function initDB() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+    request.onupgradeneeded = (e) => {
+      const database = e.target.result;
+      if (!database.objectStoreNames.contains("highlights")) database.createObjectStore("highlights", { keyPath: "id" });
+      if (!database.objectStoreNames.contains("notes")) database.createObjectStore("notes", { keyPath: "id" });
+    };
+    request.onsuccess = (e) => { db = e.target.result; loadData(); resolve(db); };
+    request.onerror = (e) => reject(e);
+  });
+}
+
+function loadData() {
+  // Cargar resaltados
+  const txH = db.transaction(["highlights"], "readonly");
+  txH.objectStore("highlights").getAll().onsuccess = (e) => {
+    highlights = {};
+    e.target.result.forEach(h => { highlights[h.id] = h.color; });
+    if (currentBookData) renderChapter();
+  };
+  // Cargar notas
+  const txN = db.transaction(["notes"], "readonly");
+  txN.objectStore("notes").getAll().onsuccess = (e) => {
+    notes = {};
+    e.target.result.forEach(n => { notes[n.id] = n; });
+    if (currentBookData) renderChapter();
+  };
+}
+
+function showColorToolbar(verseElement, verseId) {
+  selectedVerseId = verseId;
+  const toolbar = document.getElementById('colorToolbar');
+  const rect = verseElement.getBoundingClientRect();
+  toolbar.style.top = (rect.bottom + window.scrollY + 5) + 'px';
+  toolbar.style.left = Math.max(10, Math.min(rect.left + window.scrollX, window.innerWidth - 280)) + 'px';
+  toolbar.classList.add('active');
+}
+
+function hideColorToolbar() {
+  document.getElementById('colorToolbar').classList.remove('active');
+  selectedVerseId = null;
+}
+
+function applyColor(colorClass) {
+  if (!selectedVerseId) return;
+  const tx = db.transaction(["highlights"], "readwrite");
+  const store = tx.objectStore("highlights");
+  if (colorClass === "") {
+    store.delete(selectedVerseId);
+    delete highlights[selectedVerseId];
+  } else {
+    const [bookId, chapter, verseIdx] = selectedVerseId.split('_');
+    store.put({ id: selectedVerseId, bookId, chapter: parseInt(chapter), verseIdx: parseInt(verseIdx), color: colorClass });
+    highlights[selectedVerseId] = colorClass;
+  }
+  const el = document.getElementById(`v-${selectedVerseId}`);
+  if (el) {
+    el.className = "verse " + colorClass;
+    // Actualizar indicador de nota si existe para que coincida el fondo
+    updateNoteIndicator(selectedVerseId, colorClass);
+  }
+  hideColorToolbar();
+}
+
+document.addEventListener('click', (e) => {
+  const toolbar = document.getElementById('colorToolbar');
+  if (!toolbar.contains(e.target) && !e.target.closest('.verse')) hideColorToolbar();
+});
+
+function init() {
+  const vSel = document.getElementById('version');
+  Object.entries(VERSIONES).forEach(([key, name]) => {
+    const opt = document.createElement('option');
+    opt.value = key; opt.textContent = name;
+    if (key === state.version) opt.selected = true;
+    vSel.appendChild(opt);
+  });
+  const bSel = document.getElementById('book');
+  LIBROS.forEach((libro, idx) => {
+    const opt = document.createElement('option');
+    opt.value = idx; opt.textContent = libro.name;
+    bSel.appendChild(opt);
+  });
+
+  vSel.addEventListener('change', e => { state.version = e.target.value; loadChapter(); });
+  bSel.addEventListener('change', e => { state.bookIdx = parseInt(e.target.value); state.chapter = 1; updateChapterSelector(); loadChapter(); });
+  document.getElementById('chapter').addEventListener('change', e => { state.chapter = parseInt(e.target.value); loadChapter(); });
+
+  const saved = localStorage.getItem('bibliaState');
+  if (saved) {
+    try {
+      const s = JSON.parse(saved);
+      state = {...state, ...s};
+      vSel.value = state.version;
+      bSel.value = state.bookIdx;
+      updateChapterSelector();
+      document.getElementById('chapter').value = state.chapter;
+      if(s.textSize) updateTextSize(s.textSize);
+    } catch(e) {}
+  } else {
+    updateChapterSelector();
+  }
+  initDB().then(() => loadChapter());
+}
+
+function updateChapterSelector() {
+  const cSel = document.getElementById('chapter');
+  cSel.innerHTML = '';
+  const totalCaps = LIBROS[state.bookIdx].caps;
+  for (let i = 1; i <= totalCaps; i++) {
+    const opt = document.createElement('option');
+    opt.value = i; opt.textContent = i;
+    if (i === state.chapter) opt.selected = true;
+    cSel.appendChild(opt);
+  }
+}
+
+async function loadChapter() {
+  const libro = LIBROS[state.bookIdx];
+  const content = document.getElementById('content');
+  content.innerHTML = '<div class="loading"><div class="spinner"></div>Cargando...</div>';
+  try {
+    const response = await fetch(`${state.version}/${libro.id}.json`);
+    if (!response.ok) throw new Error('No encontrado');
+    currentBookData = await response.json();
+    await loadTopics(libro.id, state.chapter);
+    renderChapter();
+    document.getElementById('prevBtn').disabled = (state.bookIdx === 0 && state.chapter === 1);
+    document.getElementById('nextBtn').disabled = (state.bookIdx === LIBROS.length - 1 && state.chapter === LIBROS[LIBROS.length - 1].caps);
+    localStorage.setItem('bibliaState', JSON.stringify(state));
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  } catch (error) {
+    content.innerHTML = `<div class="loading" style="color:red;">❌ Error: ${error.message}</div>`;
+  }
+}
+
+async function loadTopics(bookId, chapter) {
+  try {
+    const response = await fetch(`contenido/${bookId}_cont.json`);
+    if (!response.ok) { currentTopics = []; return; }
+    const allTopics = await response.json();
+    currentTopics = allTopics.filter(t => t.capitulo === chapter).sort((a, b) => a.nivel - b.nivel);
+  } catch (error) { currentTopics = []; }
+}
+
+function updateNoteIndicator(vId, colorClass) {
+  const indicator = document.getElementById(`note-ind-${vId}`);
+  if (indicator) {
+    indicator.className = `note-indicator ${colorClass}`;
+  }
+}
+
+function renderChapter() {
+  const libro = LIBROS[state.bookIdx];
+  const chapterData = currentBookData.chapters[state.chapter - 1];
+  if (!chapterData) return;
+  
+  let html = `<div class="version-info">${VERSIONES[state.version]} • ${libro.name} ${state.chapter}<br><small style="font-weight:normal; opacity:0.8">Toca un versículo para opciones</small></div>`;
+  
+  chapterData.forEach((versiculo, idx) => {
+    const vId = `${libro.id}_${state.chapter}_${idx}`;
+    const hlClass = highlights[vId] || "";
+    const hasNote = notes[vId] ? '📄' : '';
+    const noteClass = notes[vId] ? (highlights[vId] || "hl-yellow") : "";
+    
+    html += `<span class="verse ${hlClass}" id="v-${vId}" onclick="showColorToolbar(this, '${vId}')">
+      <span class="verse-num">${idx + 1} ${hasNote ? `<span id="note-ind-${vId}" class="note-indicator ${noteClass}" ondblclick="event.stopPropagation(); openNoteEditor('${vId}')" onclick="event.stopPropagation(); openNoteEditor('${vId}')">📄</span>` : ''}</span>
+      ${versiculo} 
+    </span>`;
+  });
+  
+  if (currentTopics.length > 0 && contentPanelVisible) html += renderContentPanel();
+  document.getElementById('content').innerHTML = html;
+}
+
+// ==========================================
+// GESTIÓN DE NOTAS
+// ==========================================
+function openNoteEditorForCurrent() {
+  if (selectedVerseId) openNoteEditor(selectedVerseId);
+  hideColorToolbar();
+}
+
+function openNoteEditor(vId) {
+  selectedVerseId = vId;
+  const existing = notes[vId];
+  document.getElementById('noteTitle').value = existing ? existing.title : '';
+  document.getElementById('noteContent').value = existing ? existing.content : '';
+  document.getElementById('noteTags').value = existing ? existing.tags : '';
+  document.getElementById('btnDeleteNote').style.display = existing ? 'block' : 'none';
+  document.getElementById('noteEditorTitle').textContent = existing ? 'Editar Nota' : 'Nueva Nota';
+  toggleModal('noteEditorModal');
+}
+
+function saveCurrentNote() {
+  if (!selectedVerseId) return;
+  const title = document.getElementById('noteTitle').value.trim() || 'Sin título';
+  const content = document.getElementById('noteContent').value;
+  const tags = document.getElementById('noteTags').value.trim();
+  
+  const [bookId, chapter, verseIdx] = selectedVerseId.split('_');
+  const noteData = { id: selectedVerseId, bookId, chapter: parseInt(chapter), verseIdx: parseInt(verseIdx), title, content, tags };
+  
+  const tx = db.transaction(["notes"], "readwrite");
+  tx.objectStore("notes").put(noteData);
+  notes[selectedVerseId] = noteData;
+  
+  closeModal('noteEditorModal');
+  renderChapter(); // Actualizar para mostrar el indicador 📄
+}
+
+function deleteCurrentNote() {
+  if (!selectedVerseId || !confirm('¿Eliminar esta nota?')) return;
+  const tx = db.transaction(["notes"], "readwrite");
+  tx.objectStore("notes").delete(selectedVerseId);
+  delete notes[selectedVerseId];
+  closeModal('noteEditorModal');
+  renderChapter();
+}
+
+function parseNoteContent(content) {
+  if (!content) return '';
+  let html = content;
+  
+  // 1. Enlaces externos: (Texto$https://url)
+  html = html.replace(/\(([^$]+)\$([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+  
+  // 2. Imágenes: [url#wxh] donde '=' es auto/100%
+  html = html.replace(/\[([^#]+)#(\d+|[=])x(\d+|[=])\]/g, (match, url, w, h) => {
+    let style = 'max-width:100%;';
+    if (w !== '=') style += `width:${w}px;`; else style += `width:100%;`;
+    if (h !== '=') style += `height:${h}px;`; else style += `height:auto;`;
+    return `<img src="${url}" style="${style}" alt="Imagen en nota">`;
+  });
+  
+  // 3. Referencias bíblicas: (+Libro Cap:V) o (+Libro Cap:V@version)
+  // Regex para capturar: (+ [nombre libro] [cap]:[versiculo] [@version opcional] )
+  html = html.replace(/\(\+([^@]+?)\s+(\d+):(\d+(?:-\d+)?)(?:@(\w+))?\)/g, (match, bookName, cap, vers, version) => {
+    const cleanBook = bookName.trim();
+    const verAttr = version ? `data-version="${version}"` : 'data-all="true"';
+    return `<span class="verse-ref-link" onclick="showVerseRef('${cleanBook}', ${cap}, '${vers}', ${version ? `'${version}'` : 'null'})">📖 ${cleanBook} ${cap}:${vers}${version ? ' ('+version+')' : ''}</span>`;
+  });
+  
+  // Convertir saltos de línea en <br>
+  return html.replace(/\n/g, '<br>');
+}
+
+async function showVerseRef(bookName, cap, versRange, specificVersion) {
+  const modalBody = document.getElementById('verseRefBody');
+  document.getElementById('verseRefTitle').textContent = `📖 ${bookName} ${cap}:${versRange}`;
+  modalBody.innerHTML = '<div class="loading"><div class="spinner"></div>Cargando...</div>';
+  toggleModal('verseRefModal');
+  
+  // Buscar el ID del libro
+  const libro = LIBROS.find(l => l.name.toLowerCase() === bookName.toLowerCase());
+  if (!libro) {
+    modalBody.innerHTML = '<p style="color:red; text-align:center;">Libro no encontrado.</p>';
+    return;
+  }
+  
+  let html = '';
+  const versionsToCheck = specificVersion ? {[specificVersion]: VERSIONES[specificVersion]} : VERSIONES;
+  
+  for (const [vKey, vName] of Object.entries(versionsToCheck)) {
+    try {
+      const res = await fetch(`${vKey}/${libro.id}.json`);
+      if (!res.ok) continue;
+      const data = await res.json();
+      const chapterData = data.chapters[cap - 1];
+      if (!chapterData) continue;
+      
+      // Parsear rango (ej: "1-3" o "5")
+      const [start, end] = versRange.split('-').map(Number);
+      const actualEnd = end || start;
+      
+      let versesText = [];
+      for (let i = start; i <= actualEnd; i++) {
+        if (chapterData[i - 1]) versesText.push(`<sup>${i}</sup> ${chapterData[i - 1]}`);
+      }
+      
+      if (versesText.length > 0) {
+        html += `<div class="ref-modal-verse">
+          <span class="version-tag">${vName}</span>
+          <span class="verse-text">${versesText.join(' ')}</span>
+        </div>`;
+      }
+    } catch (e) { console.error(e); }
+  }
+  
+  modalBody.innerHTML = html || '<p style="text-align:center; color:#666;">No se encontraron versículos.</p>';
+}
+
+// ==========================================
+// LISTAS Y MODALES
+// ==========================================
+function toggleModal(id) {
+  const modal = document.getElementById(id);
+  if (id === 'notesListModal') renderNotesList();
+  if (id === 'bookmarksModal') renderBookmarksList();
+  modal.classList.toggle('active');
+}
+
+function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+function renderNotesList() {
+  const body = document.getElementById('notesListBody');
+  const keys = Object.keys(notes).sort((a, b) => a.localeCompare(b, undefined, {numeric: true}));
+  if (keys.length === 0) {
+    body.innerHTML = '<p style="text-align:center; padding:20px; color:#666;">No hay notas.</p>';
+    return;
+  }
+  let html = '';
+  keys.forEach(key => {
+    const n = notes[key];
+    const libro = LIBROS.find(l => l.id === n.bookId);
+    html += `<div class="list-item" onclick="closeModal('notesListModal'); goToLocation('${n.bookId}', ${n.chapter}, ${n.verseIdx})">
+      <div class="list-item-ref">📄 ${libro.name} ${n.chapter}:${n.verseIdx + 1} <br><small style="color:#666; font-weight:normal;">${n.title}</small></div>
+      <span class="list-item-delete" onclick="event.stopPropagation(); deleteNoteById('${key}')">✕</span>
+    </div>`;
+  });
+  body.innerHTML = html;
+}
+
+function renderBookmarksList() {
+  const body = document.getElementById('bookmarksListBody');
+  const keys = Object.keys(highlights).sort((a, b) => a.localeCompare(b, undefined, {numeric: true}));
+  if (keys.length === 0) {
+    body.innerHTML = '<p style="text-align:center; padding:20px; color:#666;">No hay marcadores.</p>';
+    return;
+  }
+  let html = '';
+  keys.forEach(key => {
+    const [bookId, chapter, verseIdx] = key.split('_');
+    const libro = LIBROS.find(l => l.id === bookId);
+    const color = highlights[key];
+    html += `<div class="list-item" onclick="closeModal('bookmarksModal'); goToLocation('${bookId}', ${chapter}, ${verseIdx})">
+      <div class="list-item-ref"><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${getColorCode(color)};margin-right:8px;"></span>${libro.name} ${chapter}:${parseInt(verseIdx)+1}</div>
+      <span class="list-item-delete" onclick="event.stopPropagation(); deleteHighlight('${key}')">✕</span>
+    </div>`;
+  });
+  body.innerHTML = html;
+}
+
+function deleteNoteById(key) {
+  if (!confirm('¿Eliminar esta nota?')) return;
+  const tx = db.transaction(["notes"], "readwrite");
+  tx.objectStore("notes").delete(key);
+  delete notes[key];
+  renderNotesList();
+  renderChapter();
+}
+
+function goToLocation(bookId, chapter, verseIdx) {
+  state.bookIdx = LIBROS.findIndex(l => l.id === bookId);
+  state.chapter = chapter;
+  document.getElementById('book').value = state.bookIdx;
+  updateChapterSelector();
+  document.getElementById('chapter').value = chapter;
+  loadChapter().then(() => {
+    setTimeout(() => {
+      const el = document.getElementById(`v-${bookId}_${chapter}_${verseIdx}`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.classList.add('scroll-to');
+        setTimeout(() => el.classList.remove('scroll-to'), 2000);
+      }
+    }, 300);
+  });
+}
+
+function deleteHighlight(key) {
+  const tx = db.transaction(["highlights"], "readwrite");
+  tx.objectStore("highlights").delete(key);
+  delete highlights[key];
+  renderBookmarksList();
+  renderChapter();
+}
+
+function getColorCode(className) {
+  const colors = {'hl-orange':'#ffcc80', 'hl-yellow':'#fff9c4', 'hl-green':'#c8e6c9', 'hl-blue':'#bbdefb', 'hl-purple':'#e1bee7'};
+  return colors[className] || '#ccc';
+}
+
+// ==========================================
+// EXPORTAR / IMPORTAR (.mbe)
+// ==========================================
+async function exportData() {
+  if (typeof JSZip === 'undefined') { alert('Error: Librería JSZip no cargada. Verifica tu conexión.'); return; }
+  const zip = new JSZip();
+  
+  // 1. Marcadores (JSON)
+  zip.file("marcadores", JSON.stringify(highlights, null, 2));
+  
+  // 2. Notas (Texto plano con formato específico)
+  let notesTxt = "";
+  Object.values(notes).forEach(n => {
+    notesTxt += `*/${n.title}/*\n`;
+    notesTxt += `*|${n.content.replace(/\n/g, '\n')}|*\n`;
+    notesTxt += `*~${n.tags}~*\n\n`;
+  });
+  zip.file("notas", notesTxt);
+  
+  // Generar y descargar
+  const blob = await zip.generateAsync({type: "blob"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `BibliaMT_Backup_${new Date().toISOString().slice(0,10)}.mbe`;
+  a.click();
+  URL.revokeObjectURL(url);
+  alert('✅ Datos exportados correctamente.');
+}
+
+async function importData(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (typeof JSZip === 'undefined') { alert('Error: Librería JSZip no cargada.'); return; }
+  
+  try {
+    const zip = await JSZip.loadAsync(file);
+    
+    // Importar marcadores
+    const marcadoresFile = zip.file("marcadores");
+    if (marcadoresFile) {
+      const data = JSON.parse(await marcadoresFile.async("text"));
+      const txH = db.transaction(["highlights"], "readwrite");
+      const storeH = txH.objectStore("highlights");
+      for (const [id, color] of Object.entries(data)) {
+        const [bookId, chapter, verseIdx] = id.split('_');
+        storeH.put({ id, bookId, chapter: parseInt(chapter), verseIdx: parseInt(verseIdx), color });
+      }
+    }
+    
+    // Importar notas
+    const notasFile = zip.file("notas");
+    if (notasFile) {
+      const text = await notasFile.async("text");
+      const txN = db.transaction(["notes"], "readwrite");
+      const storeN = txN.objectStore("notes");
+      
+      // Parsear formato: */titulo/* \n *|contenido|* \n *~tags~*
+      const regex = /\*\/(.*?)\/\*\s*\n\*\|(.*?)\|\*\s*\n\*\~(.*?)\~\*/gs;
+      let match;
+      while ((match = regex.exec(text)) !== null) {
+        const title = match[1].trim();
+        const content = match[2].trim();
+        const tags = match[3].trim();
+        // Generar ID temporal (en una app real se vincularía al versículo, aquí se importa genérico o se busca)
+        // Para simplificar la importación, buscamos si ya existe por título, si no, creamos una nota "importada"
+        const tempId = "imported_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5);
+        storeN.put({ id: tempId, bookId: "00", chapter: 0, verseIdx: 0, title, content, tags });
+      }
+    }
+    
+    alert('✅ Datos importados correctamente. La página se recargará.');
+    location.reload();
+  } catch (e) {
+    alert('❌ Error al importar: ' + e.message);
+  }
+  input.value = ''; // Reset input
+}
+
+// ==========================================
+// UTILIDADES Y CONFIGURACIÓN
+// ==========================================
+function updateTextSize(val) {
+  document.documentElement.style.setProperty('--text-size', val + 'em');
+  document.getElementById('textSizeLabel').textContent = Math.round(val * 100) + '%';
+  state.textSize = val;
+  localStorage.setItem('bibliaState', JSON.stringify(state));
+}
+
+function toggleContentPanel() {
+  contentPanelVisible = !contentPanelVisible;
+  document.getElementById('contentBtn').classList.toggle('active', contentPanelVisible);
+  renderChapter();
+  if (contentPanelVisible) {
+    setTimeout(() => document.querySelector('.content-panel')?.scrollIntoView({ behavior: 'smooth' }), 100);
+  }
+}
+
+function renderContentPanel() {
+  let html = '<div class="content-panel"><h3>📑 Contenido del Capítulo</h3>';
+  let currentLevel0 = null;
+  currentTopics.forEach((topic, idx) => {
+    if (topic.nivel === 0) {
+      if (currentLevel0 !== null) html += '</div>';
+      html += `<div class="topic-level-0"><div class="topic-title">${topic.tema}</div>`;
+      currentLevel0 = idx;
+    } else {
+      const levelClass = topic.nivel === 1 ? 'topic-level-1' : 'topic-level-2';
+      const indent = topic.nivel === 2 ? 'margin-left: 25px;' : '';
+      html += `<div class="${levelClass}" id="topic-${idx}" style="${indent}">
+        <div class="topic-title" onclick="toggleTopic(${idx})">${topic.tema}</div>
+        <div class="topic-preview" id="preview-${idx}">${topic.tema}</div>
+        ${renderVerseLinks(topic)}
+        <button class="toggle-btn" onclick="toggleTopic(${idx})">▼ Ver más</button>
+      </div>`;
+    }
+  });
+  if (currentLevel0 !== null) html += '</div>';
+  return html + '</div>';
+}
+
+function renderVerseLinks(topic) {
+  if (!topic.versiculos || topic.versiculos.trim() === '') return '<div style="color:#999; font-size:0.85em; margin-top:8px;">📖 Todo el capítulo</div>';
+  const verses = topic.versiculos.split(',').map(v => v.trim()).filter(v => v);
+  let links = [];
+  verses.forEach(v => {
+    const range = v.split('-');
+    if (range.length === 2) links.push(`<span class="verse-link" onclick="scrollToVerse(${range[0]})">${topic.capitulo}:${range[0]}-${range[1]}</span>`);
+    else if (!isNaN(parseInt(v))) links.push(`<span class="verse-link" onclick="scrollToVerse(${parseInt(v)})">${topic.capitulo}:${v}</span>`);
+  });
+  return `<div class="topic-verses">${links.join(' ')}</div>`;
+}
+
+function toggleTopic(idx) {
+  const topic = document.getElementById(`topic-${idx}`);
+  const preview = document.getElementById(`preview-${idx}`);
+  const btn = topic.querySelector('.toggle-btn');
+  if (topic.classList.contains('expanded')) {
+    topic.classList.remove('expanded'); preview.classList.remove('expanded'); btn.textContent = '▼ Ver más';
+  } else {
+    topic.classList.add('expanded'); preview.classList.add('expanded'); btn.textContent = '▲ Ver menos';
+  }
+}
+
+function scrollToVerse(verseNum) {
+  const vId = `${LIBROS[state.bookIdx].id}_${state.chapter}_${verseNum - 1}`;
+  const el = document.getElementById(`v-${vId}`);
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el.classList.add('scroll-to');
+    setTimeout(() => el.classList.remove('scroll-to'), 2000);
+  }
+}
+
+function prevChapter() {
+  if (state.chapter > 1) state.chapter--;
+  else if (state.bookIdx > 0) { state.bookIdx--; state.chapter = LIBROS[state.bookIdx].caps; document.getElementById('book').value = state.bookIdx; updateChapterSelector(); }
+  document.getElementById('chapter').value = state.chapter; loadChapter();
+}
+
+function nextChapter() {
+  const totalCaps = LIBROS[state.bookIdx].caps;
+  if (state.chapter < totalCaps) state.chapter++;
+  else if (state.bookIdx < LIBROS.length - 1) { state.bookIdx++; state.chapter = 1; document.getElementById('book').value = state.bookIdx; updateChapterSelector(); }
+  document.getElementById('chapter').value = state.chapter; loadChapter();
+}
+
+function normalizeText(text) { return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\w\s]/g, ""); }
+
+async function performSearch() {
+  const query = document.getElementById('searchInput').value.trim();
+  if (query.length < 3) { alert("Escribe al menos 3 letras."); return; }
+  const modalBody = document.getElementById('verseRefBody'); // Reutilizamos modal de referencias para resultados
+  document.getElementById('verseRefTitle').textContent = `Buscando: "${query}"`;
+  modalBody.innerHTML = '<div class="loading"><div class="spinner"></div>Buscando...</div>';
+  toggleModal('verseRefModal');
+
+  const normQuery = normalizeText(query);
+  const results = [];
+  for (const [vKey, vName] of Object.entries(VERSIONES)) {
+    for (const libro of LIBROS) {
+      try {
+        const res = await fetch(`${vKey}/${libro.id}.json`);
+        if (!res.ok) continue;
+        const data = await res.json();
+        data.chapters.forEach((versiculos, capIdx) => {
+          versiculos.forEach((vTexto, idx) => {
+            if (normalizeText(vTexto).includes(normQuery)) {
+              let hText = vTexto;
+              query.trim().split(/\s+/).forEach(word => {
+                const safe = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                hText = hText.replace(new RegExp(`(${safe})`, 'gi'), '<mark>$1</mark>');
+              });
+              results.push({ vName, vKey, ref: `${libro.name} ${capIdx+1}:${idx+1}`, text: hText, bookIdx: LIBROS.findIndex(l=>l.id===libro.id), chapter: capIdx+1, verseIdx: idx });
+            }
+          });
+        });
+      } catch (e) {}
+    }
+  }
+  if (results.length === 0) modalBody.innerHTML = '<p style="text-align:center; padding:20px;">No se encontraron resultados.</p>';
+  else modalBody.innerHTML = results.map(r => `<div class="list-item" style="flex-direction:column; align-items:flex-start;" onclick="closeModal('verseRefModal'); goToLocation('${r.vKey}', ${r.bookIdx}, ${r.chapter}); setTimeout(()=>scrollToVerse(${r.verseIdx+1}), 500)">
+    <div style="font-weight:bold; color:#6a1b9a; font-size:0.85em;">${r.vName} • ${r.ref}</div>
+    <div style="font-size:0.95em; margin-top:4px;">${r.text}</div>
+  </div>`).join('');
+}
+
+init();
+</script>
+</body>
+</html>

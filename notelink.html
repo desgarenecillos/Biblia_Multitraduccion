@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>JW-Notelink v1.9.7</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&family=Roboto:wght@300;400;500;700&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/sql-wasm.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#121212;--bg2:#1a1a1a;--bg3:#1f1f1f;--bg4:#252525;--bg5:#2f2f2f;
+  --fg:#e8e6ea;--fg2:#b4b0ba;--fg3:#7a757f;
+  --primary:#8B7FD4;--primary-d:#6750A4;--primary-ct:#1e1a2a;
+  --accent:#CF6679;--warn:#f59e0b;--ok:#4ade80;--border:#2d2d2d;
+}
+html,body{height:100%;height:100dvh;overflow:hidden;font-family:'Roboto',system-ui,sans-serif;background:var(--bg);color:var(--fg);font-size:14px}
+.msi{font-family:'Material Symbols Outlined';font-weight:normal;font-style:normal;font-size:20px;line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;direction:ltr;-webkit-font-feature-settings:'liga';-webkit-font-smoothing:antialiased;font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;vertical-align:middle}
+.msi.sm{font-size:16px}.msi.lg{font-size:24px}.msi.xl{font-size:32px}
+
+header{height:64px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 16px;flex-shrink:0;z-index:10}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-badge{width:36px;height:36px;border-radius:10px;background:var(--primary-d);display:grid;place-items:center;font-weight:900;font-size:14px;color:#fff;box-shadow:0 2px 8px rgba(103,80,164,0.4)}
+.logo-text{font-weight:700;font-size:16px;display:flex;align-items:center;gap:6px}
+.version-badge{font-size:10px;font-weight:600;background:var(--primary-d);color:#fff;padding:2px 7px;border-radius:10px;letter-spacing:0.3px;font-family:'Roboto Mono',monospace}
+.logo-sub{font-size:11px;color:var(--fg3)}
+.hdr-actions{display:flex;gap:4px;align-items:center}
+
+.btn{border:none;background:transparent;color:var(--fg);cursor:pointer;display:inline-flex;align-items:center;gap:7px;padding:9px 14px;border-radius:20px;font-family:inherit;font-size:13px;font-weight:500;transition:background .15s;user-select:none;white-space:nowrap}
+.btn:hover{background:rgba(255,255,255,0.08)}
+.btn:active{background:rgba(255,255,255,0.12)}
+.btn.primary{background:var(--primary-d);color:#fff}
+.btn.primary:hover{background:#7968c0}
+.btn.icon{padding:9px;border-radius:50%;width:40px;height:40px;justify-content:center}
+.btn.danger{color:var(--accent)}
+.btn.danger:hover{background:rgba(207,102,121,0.15)}
+.btn[disabled]{opacity:0.35;cursor:not-allowed}
+.btn.undo-badge{position:relative}
+.btn.undo-badge .count{position:absolute;top:1px;right:1px;background:var(--warn);color:#000;font-size:10px;font-weight:700;border-radius:8px;min-width:16px;height:16px;padding:0 4px;display:flex;align-items:center;justify-content:center}
+
+.app{display:flex;flex:1;height:calc(100% - 64px);overflow:hidden}
+.sidebar{width:100%;background:var(--bg3);display:flex;flex-direction:column;overflow:hidden}
+.main-center{display:none}
+.main-card{max-width:560px;width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:24px}
+
+.sb-top{padding:14px;border-bottom:1px solid var(--border)}
+.search-bar{display:flex;align-items:center;background:var(--bg4);border-radius:28px;padding:0 14px;gap:8px}
+.search-bar input{flex:1;background:transparent;border:none;outline:none;color:var(--fg);font-family:inherit;font-size:14px;padding:11px 0}
+.search-bar .msi{color:var(--fg3)}
+.sb-tools{display:flex;gap:8px;margin-top:12px}
+.sb-tools .btn{flex:1;justify-content:center;font-size:12px;background:var(--bg4);border-radius:12px}
+.sb-tools .btn.primary{background:var(--primary-d)}
+.sb-count{font-size:11px;color:var(--fg3);margin-top:10px;text-transform:uppercase;letter-spacing:0.5px}
+.list{flex:1;overflow:auto;padding:8px}
+
+.ni{padding:14px 14px 14px 36px;border-radius:12px;cursor:pointer;position:relative;border:1px solid transparent;margin-bottom:4px;transition:background .15s}
+.ni:hover{background:var(--bg4)}
+.ni.act{background:var(--bg5);border-color:var(--primary-d)}
+.dot{width:12px;height:12px;border-radius:50%;position:absolute;left:12px;top:18px}
+.ni-title{font-weight:500;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ni-prev{font-size:12px;color:var(--fg3);margin-top:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.4}
+
+.empty{padding:30px;text-align:center;color:var(--fg3);font-size:13px}
+.empty .msi{font-size:48px;opacity:0.3;margin-bottom:12px;display:block}
+.drop{margin:16px;border:2px dashed var(--border);border-radius:16px;padding:24px;text-align:center;cursor:pointer;transition:border-color .2s}
+.drop:hover{border-color:var(--primary)}
+.drop .msi{font-size:32px;color:var(--primary);opacity:0.5;margin-bottom:8px;display:block}
+
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);opacity:0;pointer-events:none;transition:opacity .3s;z-index:20}
+.overlay.on{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;background:var(--bg2);border-radius:24px 24px 0 0;max-height:93vh;max-height:93dvh;transform:translateY(110%);transition:transform .38s cubic-bezier(.32,.72,0,1);z-index:30;display:flex;flex-direction:column;box-shadow:0 -10px 40px rgba(0,0,0,0.4)}
+.sheet.on{transform:translateY(0)}
+.handle{width:36px;height:5px;background:var(--fg3);border-radius:99px;margin:10px auto 6px;flex-shrink:0}
+.sheet-head{padding:8px 20px 12px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)}
+.sheet-head b{font-size:16px;font-weight:500;display:flex;align-items:center;gap:8px}
+.sheet-body{flex:1;overflow:auto;padding:16px 20px 10px}
+.sheet-foot{padding:14px 20px 24px;border-top:1px solid var(--border);background:var(--bg2);display:flex;gap:8px;flex-wrap:wrap;position:sticky;bottom:0}
+.sheet-foot .spacer{flex:1}
+
+.fg{margin-bottom:14px}
+.fg label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--fg3);margin-bottom:6px;display:block}
+.fg input,.fg textarea{width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:12px;font-size:15px;background:var(--bg4);outline:none;font-family:inherit;color:var(--fg);transition:border-color .15s}
+.fg input:focus,.fg textarea:focus{border-color:var(--primary-d)}
+.fg textarea{min-height:260px;line-height:1.7;font-family:'Merriweather',serif;resize:none;white-space:pre-wrap}
+
+.colors{display:flex;gap:10px;flex-wrap:wrap}
+.color{width:36px;height:36px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:border-color .15s,transform .15s}
+.color:hover{transform:scale(1.1)}
+.color.sel{border-color:var(--fg)}
+
+.link-panel{background:var(--bg3);border:1px solid var(--border);border-radius:16px;padding:14px;margin-top:12px}
+.link-panel b{font-size:13px;color:var(--fg)}
+.link-panel .sub{font-size:11px;color:var(--fg3);margin-top:4px;line-height:1.5}
+.link-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.link-row select{flex:1;min-width:140px;padding:10px;border-radius:10px;border:1px solid var(--border);font-weight:500;background:var(--bg4);color:var(--fg);font-family:inherit;font-size:13px;cursor:pointer;outline:none}
+.link-row select:hover{border-color:var(--primary-d)}
+
+.help-modal{position:fixed;inset:0;z-index:60;display:none}
+.help-modal.on{display:grid;place-items:center}
+.help-bg{position:absolute;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(6px)}
+.help-box{position:relative;background:var(--bg2);width:min(740px,94vw);max-height:86vh;border-radius:20px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.5);display:flex;flex-direction:column;border:1px solid var(--border)}
+.help-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.help-head b{font-size:16px;display:flex;align-items:center;gap:8px}
+.help-head .vbadge{font-size:11px;font-weight:600;background:var(--primary-d);color:#fff;padding:3px 9px;border-radius:10px;font-family:'Roboto Mono',monospace;letter-spacing:0.3px}
+.help-body{overflow:auto;padding:20px;line-height:1.7}
+.help-body h4{color:var(--primary);margin:18px 0 8px;font-size:13px;text-transform:uppercase;letter-spacing:0.5px;display:flex;align-items:center;gap:6px}
+.help-body h4:first-child{margin-top:0}
+.help-body p,.help-body li{margin-bottom:8px;color:var(--fg2);font-size:13px}
+.help-body code{background:var(--bg4);padding:2px 6px;border-radius:4px;font-family:'Roboto Mono',monospace;font-size:12px;color:var(--primary)}
+.help-body ul,.help-body ol{padding-left:20px;margin-bottom:12px}
+.help-body .example{background:var(--bg4);padding:10px 14px;border-radius:8px;margin:8px 0;font-family:'Roboto Mono',monospace;font-size:11px;white-space:pre-wrap;word-break:break-word;line-height:1.6}
+.help-table{width:100%;border-collapse:collapse;font-size:12px;margin:12px 0}
+.help-table th{position:sticky;top:0;background:var(--bg3);padding:10px 12px;text-align:left;font-size:11px;text-transform:uppercase;color:var(--fg3);border-bottom:1px solid var(--border)}
+.help-table td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+.help-table td.abbr{font-family:'Roboto Mono',monospace;font-size:11px;color:var(--fg2)}
+
+.warning-box{background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);border-left:3px solid var(--warn);border-radius:12px;padding:14px;margin-bottom:14px;font-size:12px;color:#fcd34d;line-height:1.6}
+.ok-box{background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.25);border-radius:12px;padding:14px;font-size:12px;color:var(--ok);line-height:1.6;margin-bottom:12px}
+.seal-box{background:rgba(139,127,212,0.1);border:1px solid rgba(139,127,212,0.25);border-radius:12px;padding:14px;font-size:12px;color:var(--primary);line-height:1.6;margin-bottom:12px}
+.version-box{background:linear-gradient(135deg,rgba(139,127,212,0.08),rgba(103,80,164,0.08));border:1px solid rgba(139,127,212,0.25);border-radius:12px;padding:14px;font-size:12px;line-height:1.6;margin-bottom:12px}
+.version-box .ver-num{font-family:'Roboto Mono',monospace;font-size:16px;font-weight:700;color:var(--primary);display:block;margin-bottom:6px}
+.version-box ul{margin-top:8px;padding-left:18px;color:var(--fg2)}
+.version-box ul li{margin-bottom:4px}
+.version-box .tag{display:inline-block;font-size:9px;font-weight:700;padding:1px 6px;border-radius:6px;margin-right:4px;text-transform:uppercase;letter-spacing:0.5px;vertical-align:middle}
+.tag.core{background:var(--primary-d);color:#fff}
+.tag.ui{background:#2563eb;color:#fff}
+.tag.fix{background:var(--warn);color:#000}
+.tag.seal{background:#16a34a;color:#fff}
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--bg5);color:var(--fg);padding:12px 20px;border-radius:99px;font-size:13px;font-weight:500;opacity:0;transition:.35s;z-index:99;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,0.4);display:flex;align-items:center;gap:8px;border:1px solid var(--border)}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+.toast.error{border-color:var(--accent);color:var(--accent)}
+.toast.success{border-color:var(--ok)}
+.toast.info{border-color:var(--primary)}
+
+.loader{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);display:grid;place-items:center;z-index:100;opacity:0;pointer-events:none;transition:.3s}
+.loader.on{opacity:1;pointer-events:all}
+.spin{width:44px;height:44px;border:3px solid rgba(255,255,255,0.1);border-top-color:var(--primary);border-radius:50%;animation:rot .8s linear infinite;margin:auto}
+@keyframes rot{to{transform:rotate(360deg)}}
+.load-msg{margin-top:14px;font-size:13px;color:var(--fg2)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-badge">JW-NL</div>
+    <div>
+      <div class="logo-text">
+        JW-Notelink
+        <span class="version-badge">v1.9.7</span>
+      </div>
+      <div class="logo-sub" id="fileInfo">editor de notas .jwlibrary</div>
+    </div>
+  </div>
+  <div class="hdr-actions">
+    <button class="btn icon" onclick="openHelp()" title="Ayuda"><span class="msi">help</span></button>
+    <input type="file" id="fileIn" accept=".jwlibrary" hidden>
+    <button class="btn" onclick="fileIn.click()"><span class="msi sm">folder_open</span><span>Abrir</span></button>
+    <button id="expBtn" class="btn primary" disabled><span class="msi sm">download</span><span>Exportar</span></button>
+  </div>
+</header>
+
+<div class="app">
+  <aside class="sidebar">
+    <div class="sb-top">
+      <div class="search-bar">
+        <span class="msi sm">search</span>
+        <input id="searchIn" placeholder="Buscar en notas...">
+      </div>
+      <div class="sb-tools">
+        <button id="newBtn" class="btn primary" disabled><span class="msi sm">add</span><span>Nueva</span></button>
+        <button id="bulkBtn" class="btn" disabled><span class="msi sm">link</span><span>Todas</span></button>
+      </div>
+      <div class="sb-count"><span id="nCount">0</span> notas</div>
+    </div>
+    <div id="nList" class="list">
+      <div class="empty">
+        <span class="msi">description</span>
+        Abre tu archivo .jwlibrary
+        <div id="dropZ" class="drop">
+          <span class="msi">upload_file</span>
+          Arrastra tu archivo .jwlibrary aquí
+        </div>
+      </div>
+    </div>
+  </aside>
+    </div>
+  </div>
+</div>
+
+<div id="overlay" class="overlay" onclick="closeSheet()"></div>
+<div id="sheet" class="sheet">
+  <div class="handle"></div>
+  <div class="sheet-head">
+    <b><span class="msi sm">edit_note</span><span id="sheetTitle">Editar nota</span></b>
+    <div style="display:flex;gap:4px">
+      <button class="btn icon" onclick="openHelp()" title="Ayuda"><span class="msi sm">help</span></button>
+      <button class="btn icon" onclick="closeSheet()"><span class="msi sm">close</span></button>
+    </div>
+  </div>
+  <div class="sheet-body" id="sheetBody"></div>
+  <div class="sheet-foot" id="sheetFoot"></div>
+</div>
+
+<div id="helpModal" class="help-modal">
+  <div class="help-bg" onclick="closeHelp()"></div>
+  <div class="help-box">
+    <div class="help-head">
+      <b><span class="msi sm">help</span> Ayuda <span class="vbadge">v1.9.7</span></b>
+      <button class="btn icon" onclick="closeHelp()"><span class="msi sm">close</span></button>
+    </div>
+    <div class="help-body" id="helpBody"></div>
+  </div>
+</div>
+
+<div id="toast" class="toast"><span class="msi sm" id="toastIcon">info</span><span id="toastMsg"></span></div>
+<div id="loader" class="loader">
+  <div style="text-align:center">
+    <div class="spin"></div>
+    <div id="loadMsg" class="load-msg"></div>
+  </div>
+</div>
+
+<div id="bibModal" style="display:none;position:fixed;inset:0;z-index:70;">
+  <div style="position:absolute;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(6px)" onclick="cerrarModalTexto()"></div>
+  <div style="position:relative;background:var(--bg2);width:min(420px,92vw);margin:10vh auto;border-radius:20px;padding:20px;border:1px solid var(--border)">
+    <h3 style="display:flex;justify-content:space-between">📖 Insertar texto bíblico <span class="msi" onclick="cerrarModalTexto()" style="cursor:pointer">close</span></h3>
+    <div style="display:grid;gap:10px;margin-top:14px">
+      <select id="t_ver" style="padding:10px;border-radius:10px;background:var(--bg4);color:var(--fg);border:1px solid var(--border)"></select>
+      <select id="t_lib" style="padding:10px;border-radius:10px;background:var(--bg4);color:var(--fg);border:1px solid var(--border)"></select>
+      <select id="t_cap" style="padding:10px;border-radius:10px;background:var(--bg4);color:var(--fg);border:1px solid var(--border)"></select>
+      <input id="t_vers" placeholder="Vers: 1 o 1,5 o 1-5 o 1,3-5,8" style="padding:10px;border-radius:10px;background:var(--bg4);color:var(--fg);border:1px solid var(--border)">
+      <select id="t_pos" style="padding:10px;border-radius:10px;background:var(--bg4);color:var(--fg);border:1px solid var(--border)">
+        <option value="antes">Cita antes: Génesis 1:1 "En el principio..."</option>
+        <option value="despues" selected>Cita después: "En el principio..." (Génesis 1:1)</option>
+        <option value="ninguna">Solo texto: "En el principio..."</option>
+      </select>
+    </div>
+    <div id="t_prev" style="margin-top:12px;padding:12px;background:var(--bg4);border-radius:12px;font-family:'Merriweather';font-size:13px;line-height:1.6;max-height:160px;overflow:auto"></div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn" style="flex:1" onclick="cerrarModalTexto()">Cancelar</button>
+      <button class="btn primary" style="flex:1" onclick="insertarTextoBiblia()">Insertar en cursor</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const APP_VERSION = '1.9.7';
+const APP = 'jw-notelink';
+
+let S = {
+  SQL: null, db: null, manifest: null, hasNested: false, fileName: '',
+  notes: [], curId: null, curIdx: -1, colorCol: 'ColorIndex',
+  COLORS: {0:'#facc15',1:'#22c55e',2:'#3b82f6',3:'#ec4899',4:'#f97316',5:'#06b6d4',6:'#8b5cf6'},
+  undoStack: []
+};
+
+const bibleBooks = [
+  { num:1, name:"Génesis", abbr:["Gé","Gén","Gé.","Gén.","Genesis","Gn","Gen","Ge"] },
+  { num:2, name:"Éxodo", abbr:["Éx","Éxo","Éx.","Éxo.","Exodo","Ex","Exo"] },
+  { num:3, name:"Levítico", abbr:["Le","Lev","Le.","Lev.","Lv"] },
+  { num:4, name:"Números", abbr:["Nú","Núm","Nú.","Núm.","Nm","Num","Nu"] },
+  { num:5, name:"Deuteronomio", abbr:["Dt","Deu","Dt.","Deut","Deu.","Deut.","De"] },
+  { num:6, name:"Josué", abbr:["Jos","Jos.","Josué","Josue"] },
+  { num:7, name:"Jueces", abbr:["Jue","Juec","Jue.","Juec.","Jc"] },
+  { num:8, name:"Rut", abbr:["Rt","Rut","Rt.","Rut.","Ru"] },
+  { num:9, name:"1 Samuel", abbr:["1S","1 S","1Sa","1Sam","1 Sa","1Sa.","1 S.","1 Sa.","1Sam.","1 Sam","1 Sam.","1 Samuel","1Samuel"], altName:"Primero de Samuel" },
+  { num:10, name:"2 Samuel", abbr:["2S","2 S","2Sa","2Sam","2 Sa","2Sa.","2 S.","2 Sa.","2Sam.","2 Sam","2 Sam.","2 Samuel","2Samuel"], altName:"Segundo de Samuel" },
+  { num:11, name:"1 Reyes", abbr:["1R","1 R","1Re","1Rey","1Re.","1 Rey","1 Re.","1Rey.","1Reyes","1 Rey.","1Reyes.","1 Reyes"], altName:"Primero de Reyes" },
+  { num:12, name:"2 Reyes", abbr:["2R","2 R","2Re","2Rey","2Re.","2 Rey","2 Re.","2Rey.","2Reyes","2 Rey.","2Reyes.","2 Reyes"], altName:"Segundo de Reyes" },
+  { num:13, name:"1 Crónicas", abbr:["1Cr","1Cró","1 Cr","1Crón","1 Cró.","1 Crón.","1Crónicas","1 Crónicas","1Crónicas.","1 Crónicas.","1 Cronicas","1Cronicas"], altName:"Primero de las Crónicas" },
+  { num:14, name:"2 Crónicas", abbr:["2Cr","2Cró","2 Cr","2Crón","2 Cró.","2 Crón.","2Crónicas","2 Crónicas","2Crónicas.","2 Crónicas.","2 Cronicas","2Cronicas"], altName:"Segundo de las Crónicas" },
+  { num:15, name:"Esdras", abbr:["Esd","Esd.","Es"] },
+  { num:16, name:"Nehemías", abbr:["Ne","Neh","Ne.","Neh.","Nehemías","Nehemias"] },
+  { num:17, name:"Ester", abbr:["Est","Est."] },
+  { num:18, name:"Job", abbr:["Job","Job."] },
+  { num:19, name:"Salmos", abbr:["Sl","Sal","Sl.","Sal.","Salmo","Salmo."] },
+  { num:20, name:"Proverbios", abbr:["Pr","Pro","Pr.","Prov","Pro.","Prov."] },
+  { num:21, name:"Eclesiastés", abbr:["Ec","Ecl","Ec.","Ecl.","Eclesiastés","Eclesiastes","Qo"] },
+  { num:22, name:"El Cantar de los Cantares", abbr:["Can","Cnt","Cant","Can.","Cnt.","Cant.","Cantares","Cantar"], altName:"Cantar de los Cantares" },
+  { num:23, name:"Isaías", abbr:["Is","Isa","Is.","Isa.","Isaías","Isaias"] },
+  { num:24, name:"Jeremías", abbr:["Je","Jer","Je.","Jer.","Jeremías","Jeremias","Jr"] },
+  { num:25, name:"Lamentaciones", abbr:["La","Lam","La.","Lam.","Lm"] },
+  { num:26, name:"Ezequiel", abbr:["Ez","Eze","Ez.","Ezeq","Eze.","Ezeq."] },
+  { num:27, name:"Daniel", abbr:["Da","Dan","Da.","Dan.","Dn"] },
+  { num:28, name:"Oseas", abbr:["Os","Ose","Os.","Ose."] },
+  { num:29, name:"Joel", abbr:["Jl","Joe","Jl.","Joe."] },
+  { num:30, name:"Amós", abbr:["Am","Amó","Am.","Amó.","Amos","Amo"] },
+  { num:31, name:"Abdías", abbr:["Abd","Abd.","Abdías","Abdias","Ab"] },
+  { num:32, name:"Jonás", abbr:["Jon","Jon.","Jonás","Jonas"] },
+  { num:33, name:"Miqueas", abbr:["Mi","Miq","Mi.","Miq."] },
+  { num:34, name:"Nahúm", abbr:["Na","Nah","Na.","Nah.","Nahúm","Nahum"] },
+  { num:35, name:"Habacuc", abbr:["Hab","Hab."] },
+  { num:36, name:"Sofonías", abbr:["Sof","Sof.","Sofonías","Sofonias","So"] },
+  { num:37, name:"Ageo", abbr:["Ag","Age","Ag.","Ageo","Age.","Hg"] },
+  { num:38, name:"Zacarías", abbr:["Za","Zac","Za.","Zac.","Zacarías","Zacarias"] },
+  { num:39, name:"Malaquías", abbr:["Mal","Mal.","Malaquías","Malaquias","Ma"] },
+  { num:40, name:"Mateo", abbr:["Mt","Mt.","Mat","Mat."] },
+  { num:41, name:"Marcos", abbr:["Mr","Mc","Mc.","Mr.","Mar"] },
+  { num:42, name:"Lucas", abbr:["Lu","Lc","Lc.","Lu.","Luc"] },
+  { num:43, name:"Juan", abbr:["Jn","Jn.","Ju"] },
+  { num:44, name:"Hechos", abbr:["Hch","Hech","Hch.","Hech.","Hec"], altName:"Hechos de los Apóstoles" },
+  { num:45, name:"Romanos", abbr:["Ro","Rom","Ro.","Rom."] },
+  { num:46, name:"1 Corintios", abbr:["1Co","1Co.","1 Co","1Cor","1 Cor","1 Co.","1Cor.","1 Cor.","1Corintios","1 Corintios"], altName:"Primera a los Corintios" },
+  { num:47, name:"2 Corintios", abbr:["2Co","2Co.","2 Co","2Cor","2 Cor","2 Co.","2Cor.","2 Cor.","2Corintios","2 Corintios"], altName:"Segunda a los Corintios" },
+  { num:48, name:"Gálatas", abbr:["Gá","Gál","Gá.","Gál.","Gal","Ga"] },
+  { num:49, name:"Efesios", abbr:["Ef","Efe","Ef.","Efe."] },
+  { num:50, name:"Filipenses", abbr:["Flp","Flp.","Filip.","Fil","Fp"] },
+  { num:51, name:"Colosenses", abbr:["Col","Col.","Co"] },
+  { num:52, name:"1 Tesalonicenses", abbr:["1Te","1Te.","1Tes","1 Te","1 Tes","1 Te.","1Tes.","1 Tes.","1 Th","1Th"], altName:"Primera a los Tesalonicenses" },
+  { num:53, name:"2 Tesalonicenses", abbr:["2Te","2Te.","2Tes","2 Te","2 Tes","2 Te.","2Tes.","2 Tes.","2 Th","2Th"], altName:"Segunda a los Tesalonicenses" },
+  { num:54, name:"1 Timoteo", abbr:["1Ti","1Ti.","1Tim","1 Ti","1Tim.","1 Tim","1 Ti.","1 Tim.","1Timoteo","1 Timoteo"], altName:"Primera a Timoteo" },
+  { num:55, name:"2 Timoteo", abbr:["2Ti","2Ti.","2Tim","2 Tim","2Tim.","2 Tim.","2Timoteo","2 Timoteo"], altName:"Segunda a Timoteo" },
+  { num:56, name:"Tito", abbr:["Tt","Tit","Tt.","Tit."] },
+  { num:57, name:"Filemón", abbr:["Flm","Flm.","Filemón","Filemon","Filem"] },
+  { num:58, name:"Hebreos", abbr:["Heb","Heb.","He"] },
+  { num:59, name:"Santiago", abbr:["Snt","Sant","Snt.","Sant.","Stg","Stgo"] },
+  { num:60, name:"1 Pedro", abbr:["1P","1Pe","1P.","1Pe.","1 Pe","1Ped","1 Pe.","1Ped.","1 Ped","1 Ped.","1Pedro","1 Pedro"], altName:"Primera de Pedro" },
+  { num:61, name:"2 Pedro", abbr:["2P","2Pe","2P.","2Pe.","2 Pe","2Ped","2 Pe.","2Ped.","2 Ped","2 Ped.","2Pedro","2 Pedro"], altName:"Segunda de Pedro" },
+  { num:62, name:"1 Juan", abbr:["1Jn","1Jn.","1 Jn","1 Jn.","1Juan","1 Juan","1 Ju","1Ju"], altName:"Primera de Juan" },
+  { num:63, name:"2 Juan", abbr:["2Jn","2Jn.","2 Jn","2 Jn.","2Juan","2 Juan","2 Ju","2Ju"], altName:"Segunda de Juan" },
+  { num:64, name:"3 Juan", abbr:["3Jn","3Jn.","3 Jn","3 Jn.","3Juan","3 Juan","3 Ju","3Ju"], altName:"Tercera de Juan" },
+  { num:65, name:"Judas", abbr:["Jud","Jds","Jds.","Jud."] },
+  { num:66, name:"Revelación", abbr:["Ap","Rev","Ap.","Rev.","Apocalipsis","Apo"], altName:"Apocalipsis" }
+];
+
+let bookMap = {}, parts = [];
+bibleBooks.forEach(b => {
+  let all = [b.name];
+  if(b.altName) all.push(b.altName);
+  all = all.concat(b.abbr);
+  all.forEach(f => {
+    let k = f.toLowerCase().trim().replace(/\s+/g,' ');
+    bookMap[k] = {num: b.num};
+    let esc = f.replace(/\./g,'\\.').replace(/ /g,'\\s+');
+    parts.push(esc);
+  });
+});
+parts.sort((a,b) => b.length - a.length);
+let bookPat = `(?:${parts.join('|')})`;
+
+function pad(n,s){ n = String(n); while(n.length < s) n = '0'+n; return n; }
+function toSup(n){ const m = {'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'}; return String(n).split('').map(d => m[d] || d).join(''); }
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ✅ CORRECCIÓN 1: Fecha ISO estándar con milisegundos (JW Library es estricto con esto)
+function isoDate(){
+  return new Date().toISOString();
+}
+
+function limpiarEnlaces(t){
+  t = t.replace(/(\d)\s*[⁰¹²³⁴⁵⁶⁷⁸⁹]+\s*(?=\d)/g, '$1,');
+  t = t.replace(/(\d)\s*[⁰¹²³⁴⁵⁶⁷⁸⁹]+\s*,/g, '$1,');
+  t = t.replace(/,\s*[⁰¹²³⁴⁵⁶⁷⁸⁹]+\s*/g, ',');
+  t = t.replace(/([0-9])[⁰¹²³⁴⁵⁶⁷⁸⁹]+(?=\s*[:\.;,])/g, '$1');
+  t = t.replace(/\s*\{\s*https:\/\/www\.jw\.org\/finder\?pub=nwtsty&bible=[^\}\n]*[\}\)]\s*/gi, ' ');
+  t = t.replace(/\s*\[[^\]\n]*https:\/\/www\.jw\.org\/finder\?pub=nwtsty&bible=[^\]\n]*[\]\)]\s*/gi, ' ');
+  t = t.replace(/\s*<[^\n>]*https:\/\/www\.jw\.org\/finder\?pub=nwtsty&bible=[^\n>]*[>\)]\s*/gi, ' ');
+  t = t.replace(/\s*<[^>]*https:\/\/www\.jw\.org\/finder[^>]*>\s*/gi, ' ');
+  t = t.replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹]+/g, '');
+  t = t.split('\n').map(l => !l.trim() ? '' : l.replace(/[ \t]{2,}/g,' ').replace(/[ \t]+$/g,'')).join('\n');
+  t = t.replace(/\n{3,}/g, '\n\n').trim();
+  return t;
+}
+
+function parseLine(line){
+  let mainRx = new RegExp(`(${bookPat})\\s+([1-9]\\d*)(?:[:\\.]\\s*([1-9]\\d*))?(?:\\s*[-–—]\\s*(?:([1-9]\\d*)[:\\.]\\s*)?([1-9]\\d*))?`, 'gi');
+  let segs = [], lastIdx = 0, m, lastBook = null, lastChap = null;
+
+  while((m = mainRx.exec(line)) !== null){
+    if(m.index > lastIdx) segs.push({t:'text', c: line.slice(lastIdx, m.index)});
+    let bName = m[1], ch1 = m[2], vs1 = m[3], ch2 = m[4], vs2 = m[5];
+    let key = bName.toLowerCase().trim().replace(/\s+/g,' ');
+    let book = bookMap[key] || bookMap[key.replace(/\.$/,'')] || bookMap[key.replace(/\./g,'').trim()];
+    if(!book){
+      let k2 = bName.toLowerCase().replace(/\./g,'').trim().replace(/\s+/g,' ');
+      book = bookMap[k2];
+    }
+    if(!book){ segs.push({t:'text', c: m[0]}); lastIdx = mainRx.lastIndex; continue; }
+
+    lastBook = book; lastChap = parseInt(ch1);
+    let block = [];
+    if(!vs1) block.push({bn: book.num, chap: parseInt(ch1), vs:1, ve:999, whole:true, raw: m[0], sep: ''});
+    else if(ch2 && vs2) block.push({bn: book.num, chap: parseInt(ch1), vs: parseInt(vs1), endChap: parseInt(ch2), endVs: parseInt(vs2), cross:true, raw: m[0], sep: ''});
+    else if(vs2 && !ch2) block.push({bn: book.num, chap: parseInt(ch1), vs: parseInt(vs1), ve: parseInt(vs2), whole:false, raw: m[0], sep: ''});
+    else block.push({bn: book.num, chap: parseInt(ch1), vs: parseInt(vs1), ve: parseInt(vs1), whole:false, raw: m[0], sep: ''});
+
+    let pos = mainRx.lastIndex;
+    let contRx = /^\s*([,;])\s*(?:([1-9]\d*)[:\.]\s*)?([1-9]\d*)(?:\s*[-–—]\s*(?:([1-9]\d*)[:\.]\s*)?([1-9]\d*))?/i;
+    while(true){
+      let rest = line.slice(pos);
+      let cm = rest.match(contRx);
+      if(!cm || !lastBook) break;
+      let [full, sep, cCh, cVs, cCh2, cVs2] = cm;
+      let curChap = cCh ? parseInt(cCh) : lastChap;
+      if(cCh) lastChap = curChap;
+      if(cCh && cVs && cCh2 && cVs2) block.push({bn:lastBook.num, chap:parseInt(cCh), vs:parseInt(cVs), endChap:parseInt(cCh2), endVs:parseInt(cVs2), cross:true, raw:full, sep});
+      else if(cCh && cVs && cVs2 && !cCh2) block.push({bn:lastBook.num, chap:parseInt(cCh), vs:parseInt(cVs), ve:parseInt(cVs2), whole:false, raw:full, sep});
+      else if(cCh && cVs && !cVs2) block.push({bn:lastBook.num, chap:parseInt(cCh), vs:parseInt(cVs), ve:parseInt(cVs), whole:false, raw:full, sep});
+      else if(!cCh && cVs && cVs2) block.push({bn:lastBook.num, chap:curChap, vs:parseInt(cVs), ve:parseInt(cVs2), whole:false, raw:full, sep});
+      else if(!cCh && cVs && !cVs2) block.push({bn:lastBook.num, chap:curChap, vs:parseInt(cVs), ve:parseInt(cVs), whole:false, raw:full, sep});
+      else break;
+      pos += full.length;
+    }
+    mainRx.lastIndex = pos; lastIdx = pos;
+
+    let fused = [];
+    if(block.length){
+      let cur = {...block[0], txts:[block[0].raw.replace(/^\s*[,;]\s*/,'').trim()]};
+      for(let i = 1; i < block.length; i++){
+        let nxt = block[i];
+        let curEnd = cur.ve ?? cur.vs;
+        let nxtStart = nxt.vs;
+        if(!cur.whole && !nxt.whole && !cur.cross && !nxt.cross && cur.bn === nxt.bn && cur.chap === nxt.chap && nxtStart === curEnd + 1){
+          cur.ve = nxt.ve ?? nxt.vs;
+          cur.txts.push(nxt.raw.replace(/^\s*[,;]\s*/,'').trim());
+          cur.raw = cur.raw + (nxt.sep || ',') + nxt.raw.replace(/^\s*[,;]\s*/,'');
+        } else { fused.push(cur); cur = {...nxt, txts:[nxt.raw.replace(/^\s*[,;]\s*/,'').trim()]}; }
+      }
+      fused.push(cur);
+    }
+    for(let k = 0; k < fused.length; k++){
+      let d = fused[k];
+      if(k > 0 && d.sep) segs.push({t:'text', c: d.sep});
+      let bc = String(d.bn), cc = pad(d.chap,3), params = '';
+      if(d.whole) params = `${bc}${cc}001-${bc}${cc}999`;
+      else if(d.cross) params = `${bc}${cc}${pad(d.vs,3)}-${bc}${pad(d.endChap,3)}${pad(d.endVs,3)}`;
+      else {
+        params = `${bc}${cc}${pad(d.vs,3)}`;
+        if(d.ve !== d.vs) params += `-${bc}${cc}${pad(d.ve,3)}`;
+      }
+      let display = d.txts ? d.txts.join(',').replace(/,\s*,/g,',') : d.raw.replace(/^\s*[,;]\s*/,'').trim();
+      if(d.whole) display = `${ch1}`;
+      else if(d.txts && d.txts.length > 1 && !d.cross){
+        let first = d.txts[0];
+        if(first.includes(':')) display = first + ',' + d.txts.slice(1).join(',');
+      }
+      segs.push({t:'link', txt: display, params: params});
+    }
+  }
+  if(lastIdx < line.length) segs.push({t:'text', c: line.slice(lastIdx)});
+  return segs;
+}
+
+function transformarCompleto(titulo, contenido, modoContenido, modoFootnote){
+  let base = "https://www.jw.org/finder?pub=nwtsty&bible=";
+  titulo = limpiarEnlaces(titulo); contenido = limpiarEnlaces(contenido);
+  let counter = 0, allFoot = [];
+  function procTitle(txt){
+    let segs = parseLine(txt), out = '', foot = [];
+    segs.forEach(s => {
+      if(s.t === 'text') out += s.c;
+      else { counter++; out += `${s.txt}${toSup(counter)}`; foot.push(`<${toSup(counter)} ${base}${s.params} >`); }
+    });
+    return {text: out, foot};
+  }
+  let tRes = procTitle(titulo);
+  if(tRes.foot.length) allFoot.push(...tRes.foot);
+  let lines = contenido.split('\n');
+
+  if(modoContenido === 'inline'){
+    let outLines = lines.map(par => {
+      if(!par.trim()) return par;
+      let segs = parseLine(par), s = '';
+      segs.forEach(x => { if(x.t === 'text') s += x.c; else s += `${x.txt} { ${base}${x.params} }`; });
+      return s;
+    });
+    let finalContent = outLines.join('\n');
+    if(allFoot.length) finalContent += (finalContent ? '\n\n' : '') + allFoot.join(' ');
+    return {title: tRes.text, content: finalContent, counter};
+  } else {
+    if(modoFootnote === 'per_para'){
+      let finalLines = lines.map(par => {
+        if(!par.trim()) return par;
+        let segs = parseLine(par), s = '', foot = [];
+        segs.forEach(x => {
+          if(x.t === 'text') s += x.c;
+          else { counter++; s += `${x.txt}${toSup(counter)}`; foot.push(`<${toSup(counter)} ${base}${x.params} >`); }
+        });
+        if(foot.length) s += ` ${foot.join(' ')}`;
+        return s;
+      });
+      let finalC = finalLines.join('\n');
+      if(allFoot.length){
+        let lastGT = finalC.lastIndexOf('>');
+        if(lastGT > -1) finalC = finalC.slice(0, lastGT) + ' ' + allFoot.join(' ') + ' >';
+        else finalC += (finalC ? '\n\n' : '') + allFoot.join(' ');
+      }
+      return {title: tRes.text, content: finalC, counter};
+    } else {
+      let outLines = [], collected = [];
+      lines.forEach(par => {
+        if(!par.trim()){ outLines.push(par); return; }
+        let segs = parseLine(par), s = '';
+        segs.forEach(x => {
+          if(x.t === 'text') s += x.c;
+          else { counter++; s += `${x.txt}${toSup(counter)}`; collected.push(`<${toSup(counter)} ${base}${x.params} >`); }
+        });
+        outLines.push(s);
+      });
+      let finalContent = outLines.join('\n');
+      let totalFoot = [...allFoot, ...collected];
+      if(totalFoot.length) finalContent += (finalContent ? '\n\n' : '') + totalFoot.join(' ');
+      return {title: tRes.text, content: finalContent, counter};
+    }
+  }
+}
+
+function pushUndo(){
+  let ta = document.getElementById('eContent'), ti = document.getElementById('eTitle');
+  if(!ta || !ti) return;
+  S.undoStack.push({title: ti.value, content: ta.value});
+  if(S.undoStack.length > 10) S.undoStack.shift();
+  updateUndoBtn();
+}
+function undoChange(){
+  if(!S.undoStack.length) return toast('Nada que deshacer', 'info');
+  let last = S.undoStack.pop();
+  let ta = document.getElementById('eContent'), ti = document.getElementById('eTitle');
+  if(ta && ti){ ti.value = last.title; ta.value = last.content; }
+  updateUndoBtn(); toast('Estado restaurado', 'info');
+}
+function updateUndoBtn(){
+  let b = document.getElementById('undoBtn');
+  if(b){
+    let n = S.undoStack.length;
+    b.disabled = n === 0;
+    b.innerHTML = `<span class="msi sm">undo</span><span>Deshacer</span>` + (n > 0 ? `<span class="count">${n}</span>` : '');
+  }
+}
+function clearUndo(){ S.undoStack = []; }
+
+function aplicarActual(){
+  let ta = document.getElementById('eContent'), ti = document.getElementById('eTitle');
+  if(!ta || !ti) return toast('Abre una nota primero', 'error');
+  pushUndo();
+  let modo = document.getElementById('linkMode').value;
+  let footMode = document.getElementById('footPos').value;
+  let res = transformarCompleto(ti.value, ta.value, modo, footMode);
+  ti.value = res.title; ta.value = res.content;
+  let n = S.notes[S.curIdx];
+  if(n){
+    n.Title = res.title; n.Content = res.content;
+    let now = isoDate();
+    try{ S.db.run("UPDATE Note SET Title=?,Content=?,LastModified=? WHERE NoteId=?", [res.title, res.content, now, n.NoteId]); }catch(e){}
+    n.LastModified = now;
+    renderList(searchIn.value);
+  }
+  toast('Enlaces aplicados', 'success'); updateUndoBtn();
+}
+
+function aplicarTodas(){
+  if(!S.notes.length) return toast('Sin notas', 'error');
+  let modo = document.getElementById('linkMode')?.value || 'inline';
+  let footMode = document.getElementById('footPos')?.value || 'per_para';
+  if(!confirm(`¿Aplicar a ${S.notes.length} notas? Esto actualizará la fecha de todas.`)) return;
+  let total = 0;
+  S.notes.forEach(n => {
+    let res = transformarCompleto(n.Title || '', n.Content || '', modo, footMode);
+    if(res.title !== (n.Title || '') || res.content !== (n.Content || '')){
+      n.Title = res.title; n.Content = res.content;
+      let now = isoDate(); total++;
+      try{ S.db.run("UPDATE Note SET Title=?,Content=?,LastModified=? WHERE NoteId=?", [res.title, res.content, now, n.NoteId]); n.LastModified = now; }catch(e){}
+    }
+  });
+  if(S.curIdx >= 0){
+    let ta = document.getElementById('eContent'), ti = document.getElementById('eTitle');
+    if(ta) ta.value = S.notes[S.curIdx].Content;
+    if(ti) ti.value = S.notes[S.curIdx].Title;
+  }
+  renderList(searchIn.value); toast(`Aplicado a ${total} notas`, 'success');
+}
+
+function limpiarTodos(){
+  let ta = document.getElementById('eContent'), ti = document.getElementById('eTitle');
+  if(!ta || !ti) return;
+  pushUndo();
+  let orig = ti.value + '|' + ta.value;
+  ti.value = limpiarEnlaces(ti.value); ta.value = limpiarEnlaces(ta.value);
+  if((ti.value + '|' + ta.value) !== orig) toast('Enlaces limpiados', 'success');
+  else toast('Nada que limpiar', 'info');
+  updateUndoBtn();
+}
+
+async function initSQL(){
+  S.SQL = await initSqlJs({ locateFile: f => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/${f}` });
+}
+
+document.getElementById('fileIn').addEventListener('change', e => { if(e.target.files[0]) loadFile(e.target.files[0]); });
+let dz = document.getElementById('dropZ');
+if(dz){
+  dz.addEventListener('dragover', e => e.preventDefault());
+  dz.addEventListener('drop', e => { e.preventDefault(); if(e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]); });
+}
+
+async function loadFile(file){
+  showLoad('Leyendo ' + file.name + '...');
+  try{
+    let buf = await file.arrayBuffer();
+    let zip = await JSZip.loadAsync(buf);
+    S.fileName = file.name;
+    let m = zip.file('manifest.json');
+    if(m){ try{ S.manifest = JSON.parse(await m.async('string')); }catch(e){} }
+
+    let dbBuf = null;
+    // ✅ CORRECCIÓN 2: Detección robusta de userData.db (en raíz o dentro de carpeta Content/)
+    let dbEntry = zip.file('userData.db') || zip.file('Content/userData.db');
+    if(dbEntry){
+      dbBuf = await dbEntry.async('arraybuffer');
+      S.hasNested = !!zip.file('Content/userData.db');
+    }
+
+    if(!dbBuf){ toast('No se encontró userData.db', 'error'); hideLoad(); return; }
+
+    S.db = new S.SQL.Database(new Uint8Array(dbBuf));
+    loadNotes();
+    document.getElementById('expBtn').disabled = false;
+    document.getElementById('newBtn').disabled = false;
+    document.getElementById('bulkBtn').disabled = false;
+    document.getElementById('fileInfo').textContent = file.name;
+    renderList();
+    toast('Archivo cargado: ' + S.notes.length + ' notas', 'success');
+  }catch(err){
+    toast('Error: ' + err.message, 'error');
+  }
+  hideLoad();
+}
+
+function loadNotes(){
+  try{
+    let q = `SELECT n.NoteId, n.Guid, n.UserMarkGuid, n.Title, n.Content, n.LastModified, u.${S.colorCol} as colorIdx FROM Note n LEFT JOIN UserMark u ON n.UserMarkGuid = u.UserMarkGuid ORDER BY n.LastModified DESC`;
+    let r = S.db.exec(q);
+    if(!r.length){ S.notes = []; return; }
+    let cols = r[0].columns;
+    S.notes = r[0].values.map(row => { let o = {}; cols.forEach((c,i) => o[c] = row[i]); return o; });
+  }catch(e){
+    try{
+      let r = S.db.exec("SELECT * FROM Note ORDER BY LastModified DESC");
+      if(!r.length){ S.notes = []; return; }
+      let cols = r[0].columns;
+      S.notes = r[0].values.map(row => { let o = {}; cols.forEach((c,i) => o[c] = row[i]); return o; });
+    }catch(e2){ S.notes = []; }
+  }
+}
+
+function renderList(filter = ''){
+  let list = document.getElementById('nList');
+  let f = filter.toLowerCase();
+  let arr = S.notes.filter(n => !f || (n.Title || '').toLowerCase().includes(f) || (n.Content || '').toLowerCase().includes(f));
+  document.getElementById('nCount').textContent = arr.length;
+  if(!arr.length){ list.innerHTML = `<div class="empty"><span class="msi">search_off</span>${f ? 'Sin resultados' : 'No hay notas'}</div>`; return; }
+  list.innerHTML = arr.map(n => {
+    let ci = n.colorIdx ?? -1;
+    let col = ci >= 0 && S.COLORS[ci] ? S.COLORS[ci] : '#555';
+    let act = S.curId === n.NoteId ? 'act' : '';
+    return `<div class="ni ${act}" onclick="openNote(${n.NoteId})">
+      <div class="dot" style="background:${col}"></div>
+      <div class="ni-title">${esc(n.Title || 'Sin título')}</div>
+      <div class="ni-prev">${esc((n.Content || '').replace(/\s+/g,' ').slice(0,100)) || 'Vacía'}</div>
+    </div>`;
+  }).join('');
+}
+
+function openNote(id){
+  S.curId = id; S.curIdx = S.notes.findIndex(n => n.NoteId === id); clearUndo(); renderList(searchIn.value);
+  let n = S.notes[S.curIdx]; if(!n) return;
+  let colorsHtml = Object.entries(S.COLORS).map(([i,c]) => `<div class="color ${parseInt(i) === (n.colorIdx ?? 0) ? 'sel' : ''}" style="background:${c}" onclick="pickColor(${i})"></div>`).join('');
+  document.getElementById('sheetTitle').textContent = 'Editar nota';
+  document.getElementById('sheetBody').innerHTML = `
+    <div class="fg"><label><span class="msi sm" style="font-size:13px">title</span> Título</label><input id="eTitle" value="${esc(n.Title || '')}"></div>
+    <div class="fg"><label><span class="msi sm" style="font-size:13px">notes</span> Nota</label><textarea id="eContent">${esc(n.Content || '')}</textarea>
+      <div class="link-panel">
+        <b><span class="msi sm">link</span> Enlaces bíblicos</b>
+        <div class="sub">14²16 &rarr; 14,16 &bull; 5:2-6:3 rango cruzado &bull; 37,38 fusionado</div>
+        <div class="link-row">
+          <select id="linkMode"><option value="inline">INLINE { }</option><option value="footnote">FOOTNOTE &lt; &gt;</option></select>
+          <select id="footPos"><option value="per_para">Por párrafo</option><option value="end_note">Al final</option></select>
+        </div>
+        <div class="link-row">
+          <button id="undoBtn" class="btn undo-badge" onclick="undoChange()" disabled><span class="msi sm">undo</span><span>Deshacer</span></button>
+          <button class="btn primary" onclick="aplicarActual()" style="flex:1"><span class="msi sm">check</span><span>Aplicar</span></button>
+          <button class="btn" style="background:var(--bg5)" onclick="abrirModalTexto()"><span class="msi sm">menu_book</span><span>Texto</span></button>
+          <button class="btn" onclick="limpiarTodos()"><span class="msi sm">cleaning_services</span><span>Limpiar</span></button>
+        </div>
+      </div>
+    </div>
+    <div class="fg"><label><span class="msi sm" style="font-size:13px">palette</span> Color</label><div class="colors">${colorsHtml}</div></div>`;
+  document.getElementById('sheetFoot').innerHTML = `
+    <button class="btn danger" onclick="delNote()"><span class="msi sm">delete</span><span>Eliminar</span></button>
+    <div class="spacer"></div>
+    <button class="btn" onclick="closeSheet()"><span class="msi sm">close</span><span>Cancelar</span></button>
+    <button class="btn primary" onclick="saveNote()"><span class="msi sm">save</span><span>Guardar</span></button>
+    <button class="btn" onclick="aplicarTodas()"><span class="msi sm">link</span><span>Todas</span></button>`;
+  updateUndoBtn(); openSheet();
+}
+
+function openSheet(){ document.getElementById('overlay').classList.add('on'); document.getElementById('sheet').classList.add('on'); }
+function closeSheet(){ clearUndo(); document.getElementById('overlay').classList.remove('on'); document.getElementById('sheet').classList.remove('on'); }
+function pickColor(i){
+  if(S.curIdx < 0) return;
+  S.notes[S.curIdx].colorIdx = i;
+  document.querySelectorAll('.color').forEach((el, idx) => el.classList.toggle('sel', Object.keys(S.COLORS)[idx] == String(i)));
+}
+
+function saveNote(){
+  let n = S.notes[S.curIdx]; if(!n) return;
+  let t = document.getElementById('eTitle').value; let c = document.getElementById('eContent').value; let now = isoDate();
+  try{
+    S.db.run("UPDATE Note SET Title=?,Content=?,LastModified=? WHERE NoteId=?", [t, c, now, n.NoteId]);
+    if(n.UserMarkGuid) S.db.run(`UPDATE UserMark SET ${S.colorCol}=? WHERE UserMarkGuid=?`, [n.colorIdx ?? 0, n.UserMarkGuid]);
+    n.Title = t; n.Content = c; n.LastModified = now;
+    renderList(searchIn.value); toast('Nota guardada', 'success'); clearUndo(); closeSheet();
+  }catch(e){ toast(e.message, 'error'); }
+}
+
+document.getElementById('newBtn').addEventListener('click', () => {
+  try{
+    let g = crypto.randomUUID(); let now = isoDate();
+    S.db.run("INSERT INTO Note(Guid,Title,Content,LastModified) VALUES(?,?,?,?)", [g, 'Nueva nota', '', now]);
+    loadNotes(); let nn = S.notes.find(x => x.Guid === g); if(nn) openNote(nn.NoteId);
+    toast('Nueva nota creada', 'success');
+  }catch(e){ toast(e.message, 'error'); }
+});
+document.getElementById('bulkBtn').addEventListener('click', aplicarTodas);
+
+function delNote(){
+  if(!confirm('¿Eliminar esta nota?')) return;
+  try{ S.db.run("DELETE FROM Note WHERE NoteId=?", [S.notes[S.curIdx].NoteId]); loadNotes(); clearUndo(); closeSheet(); toast('Nota eliminada', 'success'); }catch(e){ toast(e.message, 'error'); }
+}
+
+// ✅ CORRECCIÓN 3: Exportación blindada y estructura ZIP correcta
+document.getElementById('expBtn').addEventListener('click', async () => {
+  if(!S.db) return;
+  showLoad('Exportando...');
+  try{
+    let now = isoDate();
+    let data = S.db.export();
+    
+    let hashHex = '';
+    try{
+      let h = await crypto.subtle.digest('SHA-256', data);
+      hashHex = Array.from(new Uint8Array(h)).map(b => b.toString(16).padStart(2,'0')).join('');
+    }catch(e){ toast('Error al calcular hash: ' + e.message, 'error'); hideLoad(); return; }
+
+    if(S.manifest){
+      let m = JSON.parse(JSON.stringify(S.manifest));
+      if(m.name !== undefined) m.name = APP;
+      if(m.userDataBackup && typeof m.userDataBackup === 'object'){
+        if(m.userDataBackup.name !== undefined) m.userDataBackup.name = APP;
+        if(m.userDataBackup.hash !== undefined) m.userDataBackup.hash = hashHex;
+        if(m.userDataBackup.databaseHash !== undefined) m.userDataBackup.databaseHash = hashHex;
+        if(m.userDataBackup.lastModifiedDate !== undefined) m.userDataBackup.lastModifiedDate = now;
+      }
+      if(m.lastModifiedDate !== undefined) m.lastModifiedDate = now;
+      if(m.hash !== undefined) m.hash = hashHex;
+      S.manifest = m;
+    }
+
+    let outer = new JSZip();
+    if(S.manifest) outer.file('manifest.json', JSON.stringify(S.manifest, null, null));
+    
+    // ✅ CORRECCIÓN 4: Estructura ZIP correcta (carpeta Content/ en lugar de archivo ZIP anidado)
+    if(S.hasNested){
+      outer.file('Content/userData.db', data);
+    } else {
+      outer.file('userData.db', data);
+    }
+
+    let finalBuf = await outer.generateAsync({type:'uint8array'});
+    let blob = new Blob([finalBuf], {type:'application/octet-stream'});
+    let url = URL.createObjectURL(blob);
+    let a = document.createElement('a');
+    a.href = url;
+    let outName = S.fileName || 'backup.jwlibrary';
+    if(!outName.toLowerCase().endsWith('.jwlibrary')) outName += '.jwlibrary';
+    a.download = outName;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    toast('Exportado ' + outName, 'success');
+  }catch(e){
+    console.error(e);
+    toast('Error al exportar: ' + e.message, 'error');
+  }
+  hideLoad();
+});
+
+function openHelp(){
+  document.getElementById('helpBody').innerHTML = `<div class="warning-box"><b>ATENCIÓN</b><br>Conserva siempre una copia de seguridad de tu archivo .jwlibrary original.</div><h4>Reglas</h4><ul><li>Versículos mismo libro/capítulo: coma <code>,</code></li><li>Otro libro o capítulo: punto y coma <code>;</code></li><li>La función Limpiar borra SOLO links de JW, no toca texto personal.</li></ul>`;
+  document.getElementById('helpModal').classList.add('on');
+}
+function closeHelp(){ document.getElementById('helpModal').classList.remove('on'); }
+
+function toast(m, type = 'info'){
+  let el = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = m;
+  document.getElementById('toastIcon').textContent = type === 'error' ? 'error' : type === 'success' ? 'check_circle' : 'info';
+  el.className = 'toast show ' + type;
+  setTimeout(() => el.className = 'toast', 3000);
+}
+function showLoad(m){ document.getElementById('loadMsg').textContent = m; document.getElementById('loader').classList.add('on'); }
+function hideLoad(){ document.getElementById('loader').classList.remove('on'); }
+document.getElementById('searchIn').addEventListener('input', e => renderList(e.target.value));
+
+/* =========================================================
+   BIBLIA TEXTO - Inserción de citas
+   ========================================================= */
+const BOOK_ID = {
+  1:"01gn", 2:"02ex", 3:"03lv", 4:"04nm", 5:"05dt", 6:"06js", 7:"07jud", 8:"08rt",
+  9:"091sm", 10:"102sm", 11:"111kgs", 12:"122kgs", 13:"131ch", 14:"142ch",
+  15:"15ezr", 16:"16ne", 17:"17et", 18:"18job", 19:"19ps", 20:"20prv",
+  21:"21ec", 22:"22so", 23:"23is", 24:"24jr", 25:"25lm", 26:"26ez",
+  27:"27dn", 28:"28ho", 29:"29jl", 30:"30am", 31:"31ob", 32:"32jn",
+  33:"33mi", 34:"34na", 35:"35hk", 36:"36zp", 37:"37hg", 38:"38zc",
+  39:"39ml", 40:"40mt", 41:"41mk", 42:"42lk", 43:"43jo", 44:"44act",
+  45:"45rm", 46:"461co", 47:"472co", 48:"48gl", 49:"49eph", 50:"50ph",
+  51:"51cl", 52:"521ts", 53:"532ts", 54:"541tm", 55:"552tm", 56:"56tt",
+  57:"57phm", 58:"58hb", 59:"59jm", 60:"601pe", 61:"612pe", 62:"621jo",
+  63:"632jo", 64:"643jo", 65:"65jd", 66:"66re"
+};
+
+const VERSIONES_TXT = {
+  "RVR1960": "Rvr60", "DHH": "dhh", "LBLA": "lbla", "NBLA": "nbla",
+  "NTV": "ntv", "NVI": "nvi", "NWT": "nwtsty", "RVA2015": "rva2015",
+  "RVC": "rvc", "TLA": "tla"
+};
+
+const URL_BASE = "https://desgarenecillos.github.io/Biblia_Multitraduccion";
+let cacheTxt = {};
+let cursorPos = 0;
+
+function numSupra(n) {
+  const map = {'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};
+  return String(n).split('').map(d => map[d] || d).join('');
+}
+
+function parseRango(input){
+  let set = new Set();
+  input.split(',').forEach(p => {
+    p = p.trim(); if(!p) return;
+    if(p.includes('-')){
+      let [a,b] = p.split('-').map(x => parseInt(x));
+      for(let i = a; i <= b; i++) set.add(i);
+    } else set.add(parseInt(p));
+  });
+  return [...set].sort((a,b) => a - b);
+}
+
+function abrirModalTexto(){
+  let ta = document.getElementById('eContent');
+  cursorPos = ta ? ta.selectionStart : 0;
+  document.getElementById('t_ver').innerHTML = Object.keys(VERSIONES_TXT)
+    .map(k => `<option value="${k}">${k}</option>`).join('');
+  document.getElementById('t_lib').innerHTML = bibleBooks
+    .map(b => `<option value="${b.num}">${b.name}</option>`).join('');
+  document.getElementById('bibModal').style.display = 'block';
+  cargarCapitulos();
+}
+
+function cerrarModalTexto(){
+  document.getElementById('bibModal').style.display = 'none';
+}
+
+async function cargarCapitulos(){
+  const ver = document.getElementById('t_ver').value;
+  const libNum = parseInt(document.getElementById('t_lib').value);
+  const bookId = BOOK_ID[libNum];
+  const carpeta = VERSIONES_TXT[ver];
+  const key = `${ver}/${bookId}`;
+  document.getElementById('t_prev').innerText = 'Cargando ' + carpeta + '/' + bookId + '.json...';
+
+  if (!cacheTxt[key]) {
+    const url = `${URL_BASE}/${carpeta}/${bookId}.json`;
+    try {
+      let r = await fetch(url);
+      if (r.ok) {
+        cacheTxt[key] = await r.json();
+      } else {
+        document.getElementById('t_prev').innerHTML = 
+          `<span style="color:#f55">❌ Error ${r.status}<br><br>URL: <code style="font-size:11px;word-break:break-all">${url}</code></span>`;
+        return;
+      }
+    } catch (e) {
+      document.getElementById('t_prev').innerHTML = 
+        `<span style="color:#f55">❌ Error de red<br><br>URL: <code style="font-size:11px;word-break:break-all">${url}</code><br><br>Error: ${e.message}</span>`;
+      return;
+    }
+  }
+
+  let total = cacheTxt[key].chapters.length;
+  let selCap = document.getElementById('t_cap');
+  let actual = parseInt(selCap.value) || 1;
+  selCap.innerHTML = "";
+  for (let i = 1; i <= total; i++) {
+    let opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = i;
+    selCap.appendChild(opt);
+  }
+  selCap.value = actual <= total ? actual : 1;
+  previewTxt();
+}
+
+async function previewTxt(){
+  try {
+    const ver = document.getElementById('t_ver').value;
+    const libNum = parseInt(document.getElementById('t_lib').value);
+    const cap = document.getElementById('t_cap').value;
+    const versInput = document.getElementById('t_vers').value || "1";
+    const pos = document.getElementById('t_pos').value;
+    const bookId = BOOK_ID[libNum];
+    const key = `${ver}/${bookId}`;
+
+    if (!cacheTxt[key]) return;
+    let chapData = cacheTxt[key].chapters[cap - 1];
+    if (!chapData) return;
+
+    let nums = parseRango(versInput);
+    let textoConSupra = nums.map(n => `${numSupra(n)} "${(chapData[n - 1] || '').trim()}"`).join(' ');
+    let libroName = bibleBooks.find(b => b.num === libNum).name;
+    let ref = `${libroName} ${cap}:${versInput}`;
+    let preview = "";
+
+    if (pos === "antes") preview = `(${ref}) ${textoConSupra}`;
+    else if (pos === "despues") preview = `${textoConSupra} (${ref} ${VERSIONES_TXT[ver]})`;
+    else preview = `${textoConSupra}`;
+
+    document.getElementById('t_prev').innerHTML = preview;
+  } catch (e) {
+    document.getElementById('t_prev').innerText = 'Escribe versículos...';
+  }
+}
+
+async function insertarTextoBiblia(){
+  const ver = document.getElementById('t_ver').value;
+  const libNum = parseInt(document.getElementById('t_lib').value);
+  const cap = document.getElementById('t_cap').value;
+  const versInput = document.getElementById('t_vers').value || "1";
+  const pos = document.getElementById('t_pos').value;
+  const bookId = BOOK_ID[libNum];
+  const key = `${ver}/${bookId}`;
+
+  if (!cacheTxt[key]) await cargarCapitulos();
+  if (!cacheTxt[key]) return;
+
+  let chapData = cacheTxt[key].chapters[cap - 1];
+  let nums = parseRango(versInput);
+  let textoConSupra = nums.map(n => `${numSupra(n)} "${(chapData[n - 1] || '').trim()}"`).join(' ');
+  let libroName = bibleBooks.find(b => b.num === libNum).name;
+  let ref = `${libroName} ${cap}:${versInput}`;
+
+  let final = "";
+  if (pos === "antes") final = `(${ref}) ${textoConSupra} `;
+  else if (pos === "despues") final = `${textoConSupra} (${ref} ${VERSIONES_TXT[ver]}) `;
+  else final = `${textoConSupra} `;
+
+  let ta = document.getElementById('eContent');
+  ta.value = ta.value.slice(0, cursorPos) + final + ta.value.slice(cursorPos);
+  ta.focus();
+  cerrarModalTexto();
+  toast('Insertado: ' + ref, 'success');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('t_lib')?.addEventListener('change', cargarCapitulos);
+  document.getElementById('t_ver')?.addEventListener('change', cargarCapitulos);
+  document.getElementById('t_cap')?.addEventListener('change', previewTxt);
+  document.getElementById('t_vers')?.addEventListener('input', previewTxt);
+  document.getElementById('t_pos')?.addEventListener('change', previewTxt);
+});
+
+initSQL();
+</script>
+</body>
+</html>

@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Biblia Multi-Traducción</title>
-<!-- Librería para crear archivos .mbe (ZIP) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#6a1b9a">
 <meta name="mobile-web-app-capable" content="yes">
@@ -15,12 +15,12 @@
 <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
 
 <style>
-  :root { --text-size: 1.05em; --primary: #6a1b9a; --primary-light: #f3e5f5; }
+  :root { --text-size: 14pt; --primary: #6a1b9a; --primary-light: #f3e5f5; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f5f5f7; color: #1a1a2e; min-height: 100vh; padding-bottom: 80px; font-size: var(--text-size); }
   
   header { background: linear-gradient(135deg, #6a1b9a 0%, #4a148c 100%); color: white; padding: 12px 15px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.3); }
-  h1 { font-size: 0.9em; margin-bottom: 10px; text-align: center; opacity: 0.9; font-weight: 500; }
+  h1 { font-size: 0.95em; margin-bottom: 10px; text-align: center; opacity: 0.95; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; }
   
   .selectors { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 10px; }
   select { padding: 8px; border: none; border-radius: 6px; background: rgba(255,255,255,0.15); color: white; font-size: 0.85em; }
@@ -28,10 +28,14 @@
 
   .search-box { display: flex; gap: 8px; margin-top: 10px; }
   .search-box input { flex: 1; padding: 8px; border: none; border-radius: 6px; font-size: 0.9em; }
-  .search-box button { padding: 8px 12px; border: none; border-radius: 6px; background: #e94560; color: white; font-weight: bold; cursor: pointer; }
+  .search-box button { padding: 8px 12px; border: none; border-radius: 6px; background: #e94560; color: white; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+  /* ★ NUEVO: Botón interlineal en el header */
+  .interlinear-btn { padding: 8px; border: none; border-radius: 6px; background: rgba(255,255,255,0.2); color: white; font-size: 0.85em; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; width: 100%; }
+  .interlinear-btn:active { background: rgba(255,255,255,0.3); }
 
   .nav-buttons { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; background: white; border-bottom: 1px solid #e0e0e0; position: sticky; top: 125px; z-index: 99; gap: 8px; flex-wrap: wrap; }
-  button.nav-btn { padding: 8px 10px; border: none; border-radius: 6px; background: #6a1b9a; color: white; cursor: pointer; font-size: 0.8em; font-weight: 600; }
+  button.nav-btn { padding: 8px 10px; border: none; border-radius: 6px; background: #6a1b9a; color: white; cursor: pointer; font-size: 0.8em; font-weight: 600; display: flex; align-items: center; gap: 4px; }
   button.nav-btn:disabled { background: #ccc; }
   button.nav-btn.active { background: #8e24aa; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
   button.nav-btn.settings { background: #546e7a; }
@@ -51,7 +55,7 @@
   .verse.scroll-to { outline: 3px solid white; outline-offset: 2px; box-shadow: 0 0 0 3px #6a1b9a; animation: pulseBorder 1s ease-in-out; }
   @keyframes pulseBorder { 0%, 100% { box-shadow: 0 0 0 3px #6a1b9a; } 50% { box-shadow: 0 0 0 6px #6a1b9a; } }
 
-  .note-indicator { cursor: pointer; font-size: 0.9em; margin-left: 2px; vertical-align: super; }
+  .note-indicator { cursor: pointer; vertical-align: super; margin-left: 2px; color: #6a1b9a; display: inline-flex; align-items: center; }
   .note-indicator:hover { transform: scale(1.2); }
 
   .version-info { text-align: center; padding: 12px; background: #e3f2fd; color: #0f3460; font-size: 0.9em; border-radius: 6px; margin-bottom: 20px; font-weight: 600; }
@@ -62,113 +66,166 @@
   .color-toolbar { position: absolute; background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); padding: 8px; display: none; z-index: 150; animation: fadeIn 0.2s; }
   .color-toolbar.active { display: flex; gap: 6px; }
   @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
-  .color-btn { width: 36px; height: 36px; border-radius: 50%; border: 2px solid #ddd; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.2em; }
+  .color-btn { width: 36px; height: 36px; border-radius: 50%; border: 2px solid #ddd; cursor: pointer; display: flex; align-items: center; justify-content: center; }
   .color-btn:active { transform: scale(0.9); }
-  .color-btn.orange { background: #ffcc80; } .color-btn.yellow { background: #fff9c4; } .color-btn.green { background: #c8e6c9; }
-  .color-btn.blue { background: #bbdefb; } .color-btn.purple { background: #e1bee7; } .color-btn.delete { background: #ffcdd2; }
-  .color-btn.note { background: #e3f2fd; border-color: #6a1b9a; }
+  .color-btn.orange { background: #fff3e0; border-color: #ff9800; color: #ff9800; } 
+  .color-btn.yellow { background: #fffde7; border-color: #fbc02d; color: #fbc02d; } 
+  .color-btn.green { background: #e8f5e9; border-color: #4caf50; color: #4caf50; }
+  .color-btn.blue { background: #e3f2fd; border-color: #2196f3; color: #2196f3; } 
+  .color-btn.purple { background: #f3e5f5; border-color: #9c27b0; color: #9c27b0; } 
+  .color-btn.delete { background: #ffebee; border-color: #f44336; color: #f44336; }
+  .color-btn.note { background: #f3e5f5; border-color: #6a1b9a; color: #6a1b9a; }
+  .color-btn.copy { background: #eceff1; border-color: #607d8b; color: #607d8b; }
 
-  /* MODALES GENERALES */
+  /* ★ NUEVO: Estilos para modo interlineal */
+  .interlinear-block { display: block; margin: 8px 0; padding: 8px; border-radius: 6px; cursor: pointer; transition: background 0.2s; border-left: 3px solid transparent; }
+  .interlinear-block:active { transform: scale(0.99); }
+  .interlinear-block.hl-orange { background-color: #ffcc80; }
+  .interlinear-block.hl-yellow { background-color: #fff9c4; }
+  .interlinear-block.hl-green { background-color: #c8e6c9; }
+  .interlinear-block.hl-blue { background-color: #bbdefb; }
+  .interlinear-block.hl-purple { background-color: #e1bee7; }
+  .interlinear-block.scroll-to { outline: 3px solid white; outline-offset: 2px; box-shadow: 0 0 0 3px #6a1b9a; animation: pulseBorder 1s ease-in-out; }
+  .interlinear-line { display: block; padding: 4px 0; border-bottom: 1px dashed rgba(0,0,0,0.1); line-height: 1.6; }
+  .interlinear-line:last-child { border-bottom: none; }
+  .interlinear-line .version-tag { display: inline-block; background: #6a1b9a; color: white; padding: 1px 6px; border-radius: 3px; font-size: 0.7em; margin-right: 6px; font-weight: 600; vertical-align: middle; }
+  .interlinear-line .verse-num-inline { color: #6a1b9a; font-weight: bold; font-size: 0.75em; vertical-align: super; margin-right: 3px; display: inline-flex; align-items: center; gap: 2px; }
+
   .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 200; justify-content: center; align-items: center; backdrop-filter: blur(3px); }
   .modal.active { display: flex; }
   .modal-content { background: white; width: 95%; max-width: 600px; max-height: 90vh; border-radius: 12px; padding: 20px; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
   .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-  .close-modal { background: none; border: none; font-size: 1.8em; cursor: pointer; color: #666; }
+  .close-modal { background: none; border: none; cursor: pointer; color: #666; display: flex; align-items: center; justify-content: center; }
 
-  /* EDITOR DE NOTAS (PANTALLA COMPLETA) */
   .note-editor-modal .modal-content { max-width: 95%; height: 95vh; display: flex; flex-direction: column; }
   .note-editor-modal input, .note-editor-modal textarea { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 6px; font-family: inherit; }
   .note-editor-modal input.title-input { font-size: 1.3em; font-weight: bold; border: none; border-bottom: 2px solid #6a1b9a; outline: none; }
   .note-editor-modal textarea { flex: 1; resize: none; font-size: 1em; line-height: 1.6; }
   .note-editor-modal .tags-input { font-size: 0.9em; color: #666; }
   .note-editor-modal .editor-actions { display: flex; gap: 10px; margin-top: 10px; }
-  .note-editor-modal button { flex: 1; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+  .note-editor-modal button { flex: 1; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
   .btn-save { background: #6a1b9a; color: white; }
   .btn-cancel { background: #e0e0e0; color: #333; }
   .btn-delete-note { background: #e94560; color: white; }
 
-  /* SINTAXIS EN NOTAS RENDERIZADAS */
   .rendered-note a { color: #1e88e5; text-decoration: underline; }
-  .rendered-note .verse-ref-link { color: #6a1b9a; font-weight: bold; cursor: pointer; background: #f3e5f5; padding: 2px 6px; border-radius: 4px; }
+  .rendered-note .verse-ref-link { color: #6a1b9a; font-weight: bold; cursor: pointer; background: #f3e5f5; padding: 2px 6px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px; }
   .rendered-note .verse-ref-link:hover { background: #e1bee7; }
   .rendered-note img { max-width: 100%; border-radius: 8px; margin: 10px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
 
-  /* CONFIGURACIÓN */
+  .note-view-modal .modal-content { max-width: 95%; max-height: 90vh; }
+  .note-view-body { padding: 15px; background: #fafafa; border-radius: 8px; line-height: 1.7; font-size: 1em; color: #333; }
+  .note-view-body .note-view-title { font-size: 1.3em; font-weight: bold; color: #6a1b9a; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 2px solid #6a1b9a; }
+  .note-view-body .note-view-tags { margin-top: 12px; font-size: 0.85em; color: #666; display: flex; align-items: center; gap: 4px; }
+  .note-view-actions { display: flex; gap: 10px; margin-top: 15px; }
+  .note-view-actions button { flex: 1; padding: 10px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+
   .settings-group { margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-radius: 8px; }
-  .settings-group h3 { margin-bottom: 10px; color: #6a1b9a; font-size: 1em; }
-  .settings-group button { width: 100%; padding: 10px; margin-top: 8px; border: none; border-radius: 6px; background: #6a1b9a; color: white; cursor: pointer; }
+  .settings-group h3 { margin-bottom: 10px; color: #6a1b9a; font-size: 1em; display: flex; align-items: center; gap: 8px; }
+  .settings-group button { width: 100%; padding: 10px; margin-top: 8px; border: none; border-radius: 6px; background: #6a1b9a; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
   .settings-group input[type="range"] { width: 100%; }
 
-  /* MODAL DE REFERENCIAS BÍBLICAS */
+  /* ★ NUEVO: Switch toggle para modo interlineal */
+  .mode-switch { display: flex; gap: 8px; margin-top: 10px; }
+  .mode-switch button { flex: 1; padding: 10px; border: 2px solid #ddd; border-radius: 6px; background: white; color: #333; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s; }
+  .mode-switch button.active { background: #6a1b9a; color: white; border-color: #6a1b9a; }
+
+  /* ★ NUEVO: Estilos para modal de ayuda */
+  .help-section { margin-bottom: 18px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
+  .help-section:last-child { border-bottom: none; }
+  .help-section h4 { color: #6a1b9a; font-size: 1em; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .help-section p, .help-section li { font-size: 0.92em; line-height: 1.6; color: #444; }
+  .help-section ul { padding-left: 20px; margin-top: 5px; }
+  .help-section code { background: #f3e5f5; color: #6a1b9a; padding: 2px 6px; border-radius: 3px; font-size: 0.9em; font-family: monospace; }
+
+  /* ★ NUEVO: Estilos para modal de versiones interlineales */
+  .versions-select-list { max-height: 50vh; overflow-y: auto; border: 1px solid #ddd; border-radius: 6px; padding: 10px; }
+  .version-option { display: flex; align-items: center; gap: 10px; padding: 10px; border-bottom: 1px solid #f0f0f0; cursor: pointer; }
+  .version-option:last-child { border-bottom: none; }
+  .version-option:hover { background: #f9f9f9; }
+  .version-option input[type="checkbox"] { width: 20px; height: 20px; accent-color: #6a1b9a; cursor: pointer; }
+  .version-option label { flex: 1; cursor: pointer; font-size: 0.95em; }
+
   .ref-modal-verse { padding: 10px; border-bottom: 1px solid #eee; }
-  .ref-modal-verse .version-tag { display: inline-block; background: #6a1b9a; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.75em; margin-right: 8px; }
+  .ref-modal-verse .version-tag { display: inline-flex; align-items: center; gap: 4px; background: #6a1b9a; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.75em; margin-right: 8px; }
   .ref-modal-verse .verse-text { font-size: 0.95em; line-height: 1.5; }
 
-  /* PANEL DE CONTENIDO (TEMAS) */
   .content-panel { background: white; border-radius: 8px; padding: 15px; margin-top: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-  .content-panel h3 { color: #6a1b9a; margin-bottom: 15px; font-size: 1.1em; border-bottom: 2px solid #6a1b9a; padding-bottom: 8px; }
+  .content-panel h3 { color: #6a1b9a; margin-bottom: 15px; font-size: 1.1em; border-bottom: 2px solid #6a1b9a; padding-bottom: 8px; display: flex; align-items: center; gap: 8px; }
   .topic-level-0 { margin: 20px 0 15px 0; padding: 10px 15px; background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%); border-left: 4px solid #6a1b9a; border-radius: 6px; }
   .topic-level-0 .topic-title { font-size: 1.1em; font-weight: 700; color: #4a148c; }
   .topic-level-1 { margin: 15px 0 10px 15px; padding: 12px; background: #f5f5f5; border-left: 3px solid #1e88e5; border-radius: 6px; border: 2px dashed transparent; transition: all 0.3s; }
   .topic-level-1.expanded { border: 2px dashed #1e88e5; background: #e3f2fd; }
-  .topic-level-1 .topic-title, .topic-level-2 .topic-title { font-weight: 600; margin-bottom: 8px; cursor: pointer; }
+  .topic-level-1 .topic-title, .topic-level-2 .topic-title { font-weight: 600; margin-bottom: 8px; cursor: pointer; display: flex; align-items: center; gap: 6px; }
   .topic-level-2 { margin: 10px 0 10px 25px; padding: 10px; background: #fafafa; border-left: 2px solid #43a047; border-radius: 4px; }
   .topic-preview { font-size: 0.9em; color: #555; line-height: 1.6; margin-bottom: 8px; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
   .topic-preview.expanded { -webkit-line-clamp: unset; }
   .topic-verses { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-  .verse-link { display: inline-block; padding: 4px 10px; background: #6a1b9a; color: white; border-radius: 4px; text-decoration: none; font-size: 0.85em; cursor: pointer; }
+  .verse-link { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; background: #6a1b9a; color: white; border-radius: 4px; text-decoration: none; font-size: 0.85em; cursor: pointer; }
   .toggle-btn { display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; background: #1e88e5; color: white; border: none; border-radius: 4px; font-size: 0.85em; cursor: pointer; margin-top: 8px; }
 
-  /* LISTA DE NOTAS / MARCADORES */
   .list-item { padding: 12px; border-bottom: 1px solid #f0f0f0; cursor: pointer; display: flex; align-items: center; }
   .list-item:hover { background: #f9f9f9; }
-  .list-item-ref { font-weight: bold; color: #6a1b9a; font-size: 0.95em; flex: 1; }
-  .list-item-delete { color: #e94560; cursor: pointer; font-weight: bold; padding: 5px 10px; }
+  .list-item-ref { font-weight: bold; color: #6a1b9a; font-size: 0.95em; flex: 1; display: flex; align-items: center; gap: 6px; }
+  .list-item-delete { color: #e94560; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 5px; border-radius: 50%; }
+  .list-item-delete:hover { background: #ffebee; }
+  .list-item-edit { color: #1e88e5; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 5px; border-radius: 50%; margin-right: 4px; }
+  .list-item-edit:hover { background: #e3f2fd; }
+
+  .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 12px 24px; border-radius: 25px; z-index: 9999; font-size: 0.95em; font-weight: 500; box-shadow: 0 4px 12px rgba(0,0,0,0.3); animation: fadeInOut 2.5s forwards; pointer-events: none; display: flex; align-items: center; gap: 8px; }
+  @keyframes fadeInOut { 0% { opacity: 0; transform: translateX(-50%) translateY(20px); } 15% { opacity: 1; transform: translateX(-50%) translateY(0); } 85% { opacity: 1; } 100% { opacity: 0; } }
+  
+  .material-icons { font-size: 1.2em; vertical-align: middle; }
+  .btn-small-icon { font-size: 1.1em !important; }
 </style>
 </head>
 <body>
 
 <header>
-  <h1>📖 Biblia Multi-Traducción</h1>
+  <h1><span class="material-icons">menu_book</span> Biblia Multi-Traducción</h1>
   <div class="selectors">
     <select id="version"></select>
     <select id="book"></select>
     <select id="chapter"></select>
   </div>
+  <!-- ★ NUEVO: Botón interlineal (oculto por defecto) -->
+  <button id="interlinearBtn" class="interlinear-btn" onclick="openInterlinearVersionsModal()" style="display:none;">
+    <span class="material-icons btn-small-icon">layers</span>
+    <span id="interlinearBtnLabel">Seleccionar traducciones</span>
+  </button>
   <div class="search-box">
     <input type="text" id="searchInput" placeholder="Buscar en todas las versiones...">
-    <button onclick="performSearch()">🔍</button>
+    <button onclick="performSearch()"><span class="material-icons btn-small-icon">search</span></button>
   </div>
 </header>
 
 <div class="nav-buttons">
-  <button class="nav-btn" id="prevBtn" onclick="prevChapter()">◀ Ant</button>
-  <button class="nav-btn" onclick="toggleModal('bookmarksModal')">🔖</button>
-  <button class="nav-btn" onclick="toggleModal('notesListModal')">📄</button>
-  <button class="nav-btn" id="contentBtn" onclick="toggleContentPanel()">📑</button>
-  <button class="nav-btn" id="nextBtn" onclick="nextChapter()">Sig ▶</button>
-  <button class="nav-btn settings" onclick="toggleModal('settingsModal')">⚙️</button>
+  <button class="nav-btn" id="prevBtn" onclick="prevChapter()"><span class="material-icons btn-small-icon">chevron_left</span> Ant</button>
+  <button class="nav-btn" onclick="toggleModal('bookmarksModal')"><span class="material-icons btn-small-icon">bookmark</span></button>
+  <button class="nav-btn" onclick="toggleModal('notesListModal')"><span class="material-icons btn-small-icon">sticky_note_2</span></button>
+  <button class="nav-btn" id="contentBtn" onclick="toggleContentPanel()"><span class="material-icons btn-small-icon">list</span></button>
+  <button class="nav-btn" id="nextBtn" onclick="nextChapter()">Sig <span class="material-icons btn-small-icon">chevron_right</span></button>
+  <button class="nav-btn settings" onclick="toggleModal('settingsModal')"><span class="material-icons btn-small-icon">settings</span></button>
 </div>
 
 <div id="content"><div class="loading"><div class="spinner"></div>Cargando...</div></div>
 
-<!-- TOOLBAR DE COLORES Y NOTA -->
 <div id="colorToolbar" class="color-toolbar">
-  <div class="color-btn orange" onclick="applyColor('hl-orange')">🟠</div>
-  <div class="color-btn yellow" onclick="applyColor('hl-yellow')">🟡</div>
-  <div class="color-btn green" onclick="applyColor('hl-green')">🟢</div>
-  <div class="color-btn blue" onclick="applyColor('hl-blue')">🔵</div>
-  <div class="color-btn purple" onclick="applyColor('hl-purple')">🟣</div>
-  <div class="color-btn delete" onclick="applyColor('')">🗑️</div>
-  <div class="color-btn note" onclick="openNoteEditorForCurrent()">📄</div>
+  <div class="color-btn orange" onclick="applyColor('hl-orange')" title="Resaltar naranja"><span class="material-icons btn-small-icon">format_color_fill</span></div>
+  <div class="color-btn yellow" onclick="applyColor('hl-yellow')" title="Resaltar amarillo"><span class="material-icons btn-small-icon">format_color_fill</span></div>
+  <div class="color-btn green" onclick="applyColor('hl-green')" title="Resaltar verde"><span class="material-icons btn-small-icon">format_color_fill</span></div>
+  <div class="color-btn blue" onclick="applyColor('hl-blue')" title="Resaltar azul"><span class="material-icons btn-small-icon">format_color_fill</span></div>
+  <div class="color-btn purple" onclick="applyColor('hl-purple')" title="Resaltar morado"><span class="material-icons btn-small-icon">format_color_fill</span></div>
+  <div class="color-btn delete" onclick="applyColor('')" title="Quitar resaltado"><span class="material-icons btn-small-icon">delete</span></div>
+  <div class="color-btn note" onclick="openNoteEditorForCurrent()" title="Agregar/Editar nota"><span class="material-icons btn-small-icon">edit_note</span></div>
+  <div class="color-btn copy" onclick="copyVerseText()" title="Copiar versículo"><span class="material-icons btn-small-icon">content_copy</span></div>
 </div>
 
-<!-- MODAL EDITOR DE NOTAS -->
 <div id="noteEditorModal" class="modal note-editor-modal">
   <div class="modal-content">
     <div class="modal-header">
       <h2 id="noteEditorTitle">Editar Nota</h2>
-      <button class="close-modal" onclick="closeModal('noteEditorModal')">&times;</button>
+      <button class="close-modal" onclick="closeModal('noteEditorModal')"><span class="material-icons">close</span></button>
     </div>
     <input type="text" id="noteTitle" class="title-input" placeholder="Título de la nota...">
     <textarea id="noteContent" placeholder="Escribe tu nota aquí...&#10;&#10;Sintaxis:&#10;(Texto$https://url.com)&#10;(+Génesis 1:1)&#10;(+Génesis 1:1@nwtsty)&#10;[https://url.com/imagen.jpg#100x=]"></textarea>
@@ -179,65 +236,179 @@
       <option value="familia">
     </datalist>
     <div class="editor-actions">
-      <button class="btn-cancel" onclick="closeModal('noteEditorModal')">Cancelar</button>
-      <button class="btn-delete-note" id="btnDeleteNote" onclick="deleteCurrentNote()" style="display:none;">Eliminar</button>
-      <button class="btn-save" onclick="saveCurrentNote()">Guardar</button>
+      <button class="btn-cancel" onclick="closeModal('noteEditorModal')"><span class="material-icons btn-small-icon">cancel</span> Cancelar</button>
+      <button class="btn-delete-note" id="btnDeleteNote" onclick="deleteCurrentNote()" style="display:none;"><span class="material-icons btn-small-icon">delete</span> Eliminar</button>
+      <button class="btn-save" onclick="saveCurrentNote()"><span class="material-icons btn-small-icon">save</span> Guardar</button>
     </div>
   </div>
 </div>
 
-<!-- MODAL LISTA DE NOTAS -->
+<div id="noteViewModal" class="modal note-view-modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2><span class="material-icons" style="margin-right:8px;">visibility</span> Vista de Nota</h2>
+      <button class="close-modal" onclick="closeModal('noteViewModal')"><span class="material-icons">close</span></button>
+    </div>
+    <div id="noteViewBody" class="note-view-body"></div>
+    <div class="note-view-actions">
+      <button class="btn-cancel" onclick="closeModal('noteViewModal')"><span class="material-icons btn-small-icon">close</span> Cerrar</button>
+      <button class="btn-save" id="btnEditFromView" onclick="editNoteFromView()"><span class="material-icons btn-small-icon">edit</span> Editar</button>
+    </div>
+  </div>
+</div>
+
 <div id="notesListModal" class="modal">
   <div class="modal-content">
     <div class="modal-header">
-      <h2>Mis Notas</h2>
-      <button class="close-modal" onclick="closeModal('notesListModal')">&times;</button>
+      <h2><span class="material-icons" style="margin-right:8px;">sticky_note_2</span> Mis Notas</h2>
+      <button class="close-modal" onclick="closeModal('notesListModal')"><span class="material-icons">close</span></button>
     </div>
     <div id="notesListBody"></div>
   </div>
 </div>
 
-<!-- MODAL LISTA DE MARCADORES -->
 <div id="bookmarksModal" class="modal">
   <div class="modal-content">
     <div class="modal-header">
-      <h2>Mis Marcadores</h2>
-      <button class="close-modal" onclick="closeModal('bookmarksModal')">&times;</button>
+      <h2><span class="material-icons" style="margin-right:8px;">bookmark</span> Mis Marcadores</h2>
+      <button class="close-modal" onclick="closeModal('bookmarksModal')"><span class="material-icons">close</span></button>
     </div>
     <div id="bookmarksListBody"></div>
   </div>
 </div>
 
-<!-- MODAL REFERENCIAS BÍBLICAS (PARSEADAS) -->
 <div id="verseRefModal" class="modal">
   <div class="modal-content">
     <div class="modal-header">
       <h2 id="verseRefTitle">Referencia</h2>
-      <button class="close-modal" onclick="closeModal('verseRefModal')">&times;</button>
+      <button class="close-modal" onclick="closeModal('verseRefModal')"><span class="material-icons">close</span></button>
     </div>
     <div id="verseRefBody"></div>
   </div>
 </div>
 
-<!-- MODAL CONFIGURACIÓN -->
+<!-- ★ NUEVO: Modal de Ayuda -->
+<div id="helpModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2><span class="material-icons" style="margin-right:8px;">help_outline</span> Ayuda y Funciones</h2>
+      <button class="close-modal" onclick="closeModal('helpModal')"><span class="material-icons">close</span></button>
+    </div>
+    
+    <div class="help-section">
+      <h4><span class="material-icons btn-small-icon">menu_book</span> Navegación</h4>
+      <p>Usa los selectores del encabezado para elegir la <strong>traducción</strong>, <strong>libro</strong> y <strong>capítulo</strong>. Los botones <strong>◀ Ant</strong> y <strong>Sig ▶</strong> te permiten avanzar o retroceder entre capítulos, pasando automáticamente al siguiente o anterior libro cuando corresponde.</p>
+    </div>
+
+    <div class="help-section">
+      <h4><span class="material-icons btn-small-icon">touch_app</span> Opciones de versículo</h4>
+      <p>Al tocar un versículo aparece un <strong>toolbar flotante</strong> con estas opciones:</p>
+      <ul>
+        <li><strong>Colores</strong> (🟠🟡🟢🔵🟣): Resalta el versículo con un color para marcarlo visualmente.</li>
+        <li><strong>🗑️ Quitar</strong>: Elimina el resaltado del versículo.</li>
+        <li><strong>📄 Nota</strong>: Abre el editor para crear o editar una nota asociada al versículo.</li>
+        <li><strong>📋 Copiar</strong>: Copia al portapapeles el texto del versículo con su referencia.</li>
+      </ul>
+    </div>
+
+    <div class="help-section">
+      <h4><span class="material-icons btn-small-icon">sticky_note_2</span> Notas</h4>
+      <p>Las notas permiten añadir comentarios personales a cualquier versículo. Soportan <strong>sintaxis especial</strong>:</p>
+      <ul>
+        <li><code>(Texto$https://url.com)</code> → Crea un enlace externo.</li>
+        <li><code>(+Génesis 1:1)</code> → Inserta una referencia bíblica que se puede tocar para ver el versículo en todas las versiones.</li>
+        <li><code>(+Génesis 1:1@nwtsty)</code> → Referencia bíblica en una versión específica.</li>
+        <li><code>[https://url/imagen.jpg#200x=]</code> → Inserta una imagen (usa <code>=</code> para tamaño automático).</li>
+      </ul>
+      <p style="margin-top:8px;">Puedes añadir <strong>etiquetas</strong> (separadas por comas) para organizar tus notas. Al tocar el icono 📄 junto al número del versículo, se abre una <strong>vista previa renderizada</strong> de la nota.</p>
+    </div>
+
+    <div class="help-section">
+      <h4><span class="material-icons btn-small-icon">bookmark</span> Marcadores</h4>
+      <p>Todos los versículos resaltados con color aparecen automáticamente en la lista de <strong>Marcadores</strong>. Desde allí puedes navegar al versículo o eliminar el resaltado.</p>
+    </div>
+
+    <div class="help-section">
+      <h4><span class="material-icons btn-small-icon">search</span> Búsqueda</h4>
+      <p>Escribe al menos 3 letras en el buscador para encontrar coincidencias en <strong>todas las versiones y todos los libros</strong>. Los resultados se muestran resaltados y al tocar uno te lleva directamente al versículo.</p>
+    </div>
+
+    <div class="help-section">
+      <h4><span class="material-icons btn-small-icon">list</span> Contenido del capítulo</h4>
+      <p>El botón <strong>📑</strong> muestra/oculta un panel con los temas y subtemas del capítulo actual (si están disponibles). Puedes expandir cada tema para ver más detalles y tocar los enlaces de versículos para navegar a ellos.</p>
+    </div>
+
+    <div class="help-section">
+      <h4><span class="material-icons btn-small-icon">layers</span> Modo Interlineal</h4>
+      <p>En <strong>Configuración</strong> puedes cambiar entre dos modos de lectura:</p>
+      <ul>
+        <li><strong>Una traducción</strong>: Muestra solo la versión seleccionada en el selector.</li>
+        <li><strong>Interlineal</strong>: Muestra cada versículo con <strong>varias traducciones apiladas</strong>, una debajo de otra, cada una con su etiqueta de versión. Ideal para estudio comparativo.</li>
+      </ul>
+    </div>
+
+    <div class="help-section">
+      <h4><span class="material-icons btn-small-icon">sync_alt</span> Respaldo de datos</h4>
+      <p>Usa <strong>Exportar</strong> para descargar un archivo <code>.mbe</code> con todas tus notas, marcadores y configuración. Usa <strong>Importar</strong> para restaurar esos datos en este u otro dispositivo.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ★ NUEVO: Modal de selección de versiones interlineales -->
+<div id="interlinearVersionsModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2><span class="material-icons" style="margin-right:8px;">layers</span> Traducciones Interlineales</h2>
+      <button class="close-modal" onclick="closeModal('interlinearVersionsModal')"><span class="material-icons">close</span></button>
+    </div>
+    <p style="color:#666; font-size:0.9em; margin-bottom:12px;">Selecciona una o más traducciones para ver cada versículo con todas ellas apiladas:</p>
+    <div id="versionsSelectList" class="versions-select-list"></div>
+    <div style="display:flex; gap:10px; margin-top:15px;">
+      <button class="btn-cancel" onclick="closeModal('interlinearVersionsModal')" style="flex:1; padding:12px; border:none; border-radius:6px; font-weight:bold; cursor:pointer;">Cancelar</button>
+      <button class="btn-save" onclick="saveInterlinearVersions()" style="flex:1; padding:12px; border:none; border-radius:6px; font-weight:bold; cursor:pointer;">Aplicar</button>
+    </div>
+  </div>
+</div>
+
 <div id="settingsModal" class="modal">
   <div class="modal-content">
     <div class="modal-header">
-      <h2>Configuración</h2>
-      <button class="close-modal" onclick="closeModal('settingsModal')">&times;</button>
+      <h2><span class="material-icons" style="margin-right:8px;">settings</span> Configuración</h2>
+      <button class="close-modal" onclick="closeModal('settingsModal')"><span class="material-icons">close</span></button>
     </div>
+    
     <div class="settings-group">
-      <h3>Tamaño de texto</h3>
-      <input type="range" id="textSizeRange" min="0.8" max="1.5" step="0.1" value="1.05" oninput="updateTextSize(this.value)">
-      <p style="text-align:center; margin-top:5px; color:#666;" id="textSizeLabel">105%</p>
+      <h3><span class="material-icons btn-small-icon">format_size</span> Tamaño de texto</h3>
+      <input type="range" id="textSizeRange" min="8" max="30" step="1" value="14" oninput="updateTextSize(this.value)">
+      <p style="text-align:center; margin-top:5px; color:#666;" id="textSizeLabel">14 pt</p>
     </div>
+
     <div class="settings-group">
-      <h3>Datos (Exportar / Importar)</h3>
-      <button onclick="exportData()">📤 Exportar datos (.mbe)</button>
-      <button onclick="document.getElementById('importFile').click()" style="background:#1e88e5; margin-top:10px;">📥 Importar datos (.mbe)</button>
+      <h3><span class="material-icons btn-small-icon">layers</span> Modo de lectura</h3>
+      <p style="font-size:0.85em; color:#666; margin-bottom:8px;">Elige cómo quieres ver las traducciones:</p>
+      <div class="mode-switch">
+        <button id="modeSingleBtn" onclick="setReadingMode('single')">
+          <span class="material-icons btn-small-icon">article</span> Una traducción
+        </button>
+        <button id="modeInterlinearBtn" onclick="setReadingMode('interlinear')">
+          <span class="material-icons btn-small-icon">layers</span> Interlineal
+        </button>
+      </div>
+    </div>
+
+    <div class="settings-group">
+      <h3><span class="material-icons btn-small-icon">help_outline</span> Ayuda</h3>
+      <button onclick="closeModal('settingsModal'); setTimeout(()=>toggleModal('helpModal'), 200);" style="background:#1e88e5;">
+        <span class="material-icons btn-small-icon">help</span> Ver ayuda y funciones
+      </button>
+    </div>
+
+    <div class="settings-group">
+      <h3><span class="material-icons btn-small-icon">sync_alt</span> Datos (Exportar / Importar)</h3>
+      <button onclick="exportData()"><span class="material-icons btn-small-icon">file_download</span> Exportar datos (.mbe)</button>
+      <button onclick="document.getElementById('importFile').click()" style="background:#1e88e5; margin-top:10px;"><span class="material-icons btn-small-icon">file_upload</span> Importar datos (.mbe)</button>
       <input type="file" id="importFile" accept=".mbe" style="display:none" onchange="importData(this)">
-   
-</div>
+    </div>
   </div>
 </div>
 
@@ -291,10 +462,17 @@ let currentTopics = [];
 let highlights = {};
 let notes = {};
 let selectedVerseId = null;
+let currentNoteVerseId = null;
+let viewingNoteId = null;
 let contentPanelVisible = false;
 
+// ★ NUEVAS VARIABLES: modo de lectura
+let readingMode = 'single'; // 'single' o 'interlinear'
+let interlinearVersions = ["nwtsty", "Rvr60"]; // versiones por defecto en modo interlineal
+let interlinearDataCache = {}; // caché de datos de versiones interlineales
+
 const DB_NAME = "BibliaMT_DB";
-const DB_VERSION = 2; // Actualizado para incluir notas
+const DB_VERSION = 2;
 let db;
 
 function initDB() {
@@ -311,14 +489,12 @@ function initDB() {
 }
 
 function loadData() {
-  // Cargar resaltados
   const txH = db.transaction(["highlights"], "readonly");
   txH.objectStore("highlights").getAll().onsuccess = (e) => {
     highlights = {};
     e.target.result.forEach(h => { highlights[h.id] = h.color; });
     if (currentBookData) renderChapter();
   };
-  // Cargar notas
   const txN = db.transaction(["notes"], "readonly");
   txN.objectStore("notes").getAll().onsuccess = (e) => {
     notes = {};
@@ -332,7 +508,7 @@ function showColorToolbar(verseElement, verseId) {
   const toolbar = document.getElementById('colorToolbar');
   const rect = verseElement.getBoundingClientRect();
   toolbar.style.top = (rect.bottom + window.scrollY + 5) + 'px';
-  toolbar.style.left = Math.max(10, Math.min(rect.left + window.scrollX, window.innerWidth - 280)) + 'px';
+  toolbar.style.left = Math.max(10, Math.min(rect.left + window.scrollX, window.innerWidth - 320)) + 'px';
   toolbar.classList.add('active');
 }
 
@@ -355,8 +531,7 @@ function applyColor(colorClass) {
   }
   const el = document.getElementById(`v-${selectedVerseId}`);
   if (el) {
-    el.className = "verse " + colorClass;
-    // Actualizar indicador de nota si existe para que coincida el fondo
+    el.className = (readingMode === 'interlinear' ? 'interlinear-block ' : 'verse ') + colorClass;
     updateNoteIndicator(selectedVerseId, colorClass);
   }
   hideColorToolbar();
@@ -364,7 +539,10 @@ function applyColor(colorClass) {
 
 document.addEventListener('click', (e) => {
   const toolbar = document.getElementById('colorToolbar');
-  if (!toolbar.contains(e.target) && !e.target.closest('.verse')) hideColorToolbar();
+  const isInsideModal = e.target.closest('.modal');
+  if (!toolbar.contains(e.target) && !e.target.closest('.verse') && !e.target.closest('.interlinear-block') && !isInsideModal) {
+    hideColorToolbar();
+  }
 });
 
 function init() {
@@ -391,15 +569,20 @@ function init() {
     try {
       const s = JSON.parse(saved);
       state = {...state, ...s};
+      if (s.readingMode) readingMode = s.readingMode;
+      if (s.interlinearVersions && Array.isArray(s.interlinearVersions)) interlinearVersions = s.interlinearVersions;
       vSel.value = state.version;
       bSel.value = state.bookIdx;
       updateChapterSelector();
       document.getElementById('chapter').value = state.chapter;
-      if(s.textSize) updateTextSize(s.textSize);
+      if(s.textSize) updateTextSize(s.textSize, true);
     } catch(e) {}
   } else {
     updateChapterSelector();
   }
+  
+  // Aplicar modo de lectura a la UI
+  applyReadingModeToUI();
   initDB().then(() => loadChapter());
 }
 
@@ -423,6 +606,22 @@ async function loadChapter() {
     const response = await fetch(`${state.version}/${libro.id}.json`);
     if (!response.ok) throw new Error('No encontrado');
     currentBookData = await response.json();
+    
+    // ★ Si está en modo interlineal, cargar también las otras versiones
+    if (readingMode === 'interlinear') {
+      interlinearDataCache = {};
+      interlinearDataCache[state.version] = currentBookData;
+      for (const vKey of interlinearVersions) {
+        if (vKey === state.version) continue;
+        try {
+          const res = await fetch(`${vKey}/${libro.id}.json`);
+          if (res.ok) {
+            interlinearDataCache[vKey] = await res.json();
+          }
+        } catch (e) { /* versión no disponible, se ignora */ }
+      }
+    }
+    
     await loadTopics(libro.id, state.chapter);
     renderChapter();
     document.getElementById('prevBtn').disabled = (state.bookIdx === 0 && state.chapter === 1);
@@ -452,96 +651,375 @@ function updateNoteIndicator(vId, colorClass) {
 
 function renderChapter() {
   const libro = LIBROS[state.bookIdx];
+  
+  if (readingMode === 'interlinear') {
+    renderInterlinearChapter(libro);
+  } else {
+    renderSingleChapter(libro);
+  }
+  
+  if (currentTopics.length > 0 && contentPanelVisible) {
+    document.getElementById('content').innerHTML += renderContentPanel();
+  }
+}
+
+function renderSingleChapter(libro) {
   const chapterData = currentBookData.chapters[state.chapter - 1];
   if (!chapterData) return;
   
-  let html = `<div class="version-info">${VERSIONES[state.version]} • ${libro.name} ${state.chapter}<br><small style="font-weight:normal; opacity:0.8">Toca un versículo para opciones</small></div>`;
+  let html = `<div class="version-info"><span class="material-icons" style="vertical-align:middle; margin-right:5px;">menu_book</span> ${VERSIONES[state.version]} • ${libro.name} ${state.chapter}<br><small style="font-weight:normal; opacity:0.8">Toca un versículo para opciones</small></div>`;
   
   chapterData.forEach((versiculo, idx) => {
     const vId = `${libro.id}_${state.chapter}_${idx}`;
     const hlClass = highlights[vId] || "";
-    const hasNote = notes[vId] ? '📄' : '';
+    const hasNote = notes[vId] ? '<span class="material-icons" style="font-size:0.9em; vertical-align:super; margin-left:2px;">sticky_note_2</span>' : '';
     const noteClass = notes[vId] ? (highlights[vId] || "hl-yellow") : "";
     
     html += `<span class="verse ${hlClass}" id="v-${vId}" onclick="showColorToolbar(this, '${vId}')">
-      <span class="verse-num">${idx + 1} ${hasNote ? `<span id="note-ind-${vId}" class="note-indicator ${noteClass}" ondblclick="event.stopPropagation(); openNoteEditor('${vId}')" onclick="event.stopPropagation(); openNoteEditor('${vId}')">📄</span>` : ''}</span>
+      <span class="verse-num">${idx + 1} ${hasNote ? `<span id="note-ind-${vId}" class="note-indicator ${noteClass}" ondblclick="event.stopPropagation(); viewRenderedNote('${vId}')" onclick="event.stopPropagation(); viewRenderedNote('${vId}')">${hasNote}</span>` : ''}</span>
       ${versiculo} 
     </span>`;
   });
   
-  if (currentTopics.length > 0 && contentPanelVisible) html += renderContentPanel();
   document.getElementById('content').innerHTML = html;
+}
+
+// ★ NUEVA FUNCIÓN: Renderizar capítulo en modo interlineal
+function renderInterlinearChapter(libro) {
+  // Determinar qué versiones están disponibles
+  const availableVersions = interlinearVersions.filter(v => interlinearDataCache[v]);
+  
+  if (availableVersions.length === 0) {
+    document.getElementById('content').innerHTML = `<div class="loading" style="color:red;">No hay traducciones disponibles. Selecciona al menos una en el botón de traducciones.</div>`;
+    return;
+  }
+  
+  // Tomar el número de versículos de la primera versión disponible
+  const primaryVersion = availableVersions[0];
+  const primaryData = interlinearDataCache[primaryVersion];
+  const chapterData = primaryData.chapters[state.chapter - 1];
+  if (!chapterData) return;
+  
+  let html = `<div class="version-info"><span class="material-icons" style="vertical-align:middle; margin-right:5px;">layers</span> Modo Interlineal • ${libro.name} ${state.chapter}<br><small style="font-weight:normal; opacity:0.8">${availableVersions.length} traducciones · Toca un versículo para opciones</small></div>`;
+  
+  chapterData.forEach((versiculo, idx) => {
+    const vId = `${libro.id}_${state.chapter}_${idx}`;
+    const hlClass = highlights[vId] || "";
+    const hasNote = notes[vId] ? '<span class="material-icons" style="font-size:0.9em; vertical-align:super; margin-left:2px;">sticky_note_2</span>' : '';
+    const noteClass = notes[vId] ? (highlights[vId] || "hl-yellow") : "";
+    
+    let blockHtml = `<div class="interlinear-block ${hlClass}" id="v-${vId}" onclick="showColorToolbar(this, '${vId}')">`;
+    
+    // Primera línea con el número del versículo y el indicador de nota
+    const firstVersion = availableVersions[0];
+    const firstText = interlinearDataCache[firstVersion].chapters[state.chapter - 1][idx] || '';
+    blockHtml += `<div class="interlinear-line">
+      <span class="verse-num-inline">${idx + 1} ${hasNote ? `<span id="note-ind-${vId}" class="note-indicator ${noteClass}" ondblclick="event.stopPropagation(); viewRenderedNote('${vId}')" onclick="event.stopPropagation(); viewRenderedNote('${vId}')">${hasNote}</span>` : ''}</span>
+      <span class="version-tag">${VERSIONES[firstVersion]}</span>
+      ${firstText}
+    </div>`;
+    
+    // Líneas adicionales para las demás versiones
+    for (let i = 1; i < availableVersions.length; i++) {
+      const vKey = availableVersions[i];
+      const vData = interlinearDataCache[vKey];
+      const vChapter = vData.chapters[state.chapter - 1];
+      const vText = vChapter ? (vChapter[idx] || '') : '[No disponible]';
+      blockHtml += `<div class="interlinear-line">
+        <span class="version-tag">${VERSIONES[vKey]}</span>
+        ${vText}
+      </div>`;
+    }
+    
+    blockHtml += `</div>`;
+    html += blockHtml;
+  });
+  
+  document.getElementById('content').innerHTML = html;
+}
+
+// ==========================================
+// ★ NUEVAS FUNCIONES: MODO DE LECTURA
+// ==========================================
+function setReadingMode(mode) {
+  readingMode = mode;
+  state.readingMode = mode;
+  localStorage.setItem('bibliaState', JSON.stringify(state));
+  applyReadingModeToUI();
+  loadChapter();
+  showToast('check_circle', mode === 'interlinear' ? 'Modo interlineal activado' : 'Modo una traducción activado');
+}
+
+function applyReadingModeToUI() {
+  const vSel = document.getElementById('version');
+  const interBtn = document.getElementById('interlinearBtn');
+  const singleBtn = document.getElementById('modeSingleBtn');
+  const interModeBtn = document.getElementById('modeInterlinearBtn');
+  
+  if (readingMode === 'interlinear') {
+    vSel.style.display = 'none';
+    interBtn.style.display = 'flex';
+    updateInterlinearBtnLabel();
+    if (singleBtn) singleBtn.classList.remove('active');
+    if (interModeBtn) interModeBtn.classList.add('active');
+  } else {
+    vSel.style.display = '';
+    interBtn.style.display = 'none';
+    if (singleBtn) singleBtn.classList.add('active');
+    if (interModeBtn) interModeBtn.classList.remove('active');
+  }
+}
+
+function updateInterlinearBtnLabel() {
+  const label = document.getElementById('interlinearBtnLabel');
+  const count = interlinearVersions.length;
+  label.textContent = count === 1 ? '1 traducción' : `${count} traducciones`;
+}
+
+function openInterlinearVersionsModal() {
+  const list = document.getElementById('versionsSelectList');
+  list.innerHTML = '';
+  Object.entries(VERSIONES).forEach(([key, name]) => {
+    const checked = interlinearVersions.includes(key) ? 'checked' : '';
+    list.innerHTML += `
+      <div class="version-option">
+        <input type="checkbox" id="vopt-${key}" value="${key}" ${checked}>
+        <label for="vopt-${key}">${name}</label>
+      </div>
+    `;
+  });
+  toggleModal('interlinearVersionsModal');
+}
+
+function saveInterlinearVersions() {
+  const checkboxes = document.querySelectorAll('#versionsSelectList input[type="checkbox"]:checked');
+  const selected = Array.from(checkboxes).map(cb => cb.value);
+  
+  if (selected.length === 0) {
+    showToast('error', 'Selecciona al menos una traducción');
+    return;
+  }
+  
+  interlinearVersions = selected;
+  state.interlinearVersions = selected;
+  localStorage.setItem('bibliaState', JSON.stringify(state));
+  updateInterlinearBtnLabel();
+  closeModal('interlinearVersionsModal');
+  loadChapter();
+  showToast('check_circle', `${selected.length} traducción(es) aplicada(s)`);
 }
 
 // ==========================================
 // GESTIÓN DE NOTAS
 // ==========================================
 function openNoteEditorForCurrent() {
-  if (selectedVerseId) openNoteEditor(selectedVerseId);
-  hideColorToolbar();
+  if (selectedVerseId) {
+    currentNoteVerseId = selectedVerseId;
+    openNoteEditor(selectedVerseId);
+    document.getElementById('colorToolbar').classList.remove('active');
+  }
 }
 
 function openNoteEditor(vId) {
-  selectedVerseId = vId;
+  currentNoteVerseId = vId;
   const existing = notes[vId];
   document.getElementById('noteTitle').value = existing ? existing.title : '';
   document.getElementById('noteContent').value = existing ? existing.content : '';
   document.getElementById('noteTags').value = existing ? existing.tags : '';
-  document.getElementById('btnDeleteNote').style.display = existing ? 'block' : 'none';
+  document.getElementById('btnDeleteNote').style.display = existing ? 'flex' : 'none';
   document.getElementById('noteEditorTitle').textContent = existing ? 'Editar Nota' : 'Nueva Nota';
   toggleModal('noteEditorModal');
 }
 
 function saveCurrentNote() {
-  if (!selectedVerseId) return;
+  const vId = currentNoteVerseId;
+  if (!vId) {
+    showToast('error', 'No hay versículo asociado a esta nota');
+    return;
+  }
+  if (!db) {
+    showToast('error', 'Base de datos no lista');
+    return;
+  }
+  
   const title = document.getElementById('noteTitle').value.trim() || 'Sin título';
   const content = document.getElementById('noteContent').value;
   const tags = document.getElementById('noteTags').value.trim();
   
-  const [bookId, chapter, verseIdx] = selectedVerseId.split('_');
-  const noteData = { id: selectedVerseId, bookId, chapter: parseInt(chapter), verseIdx: parseInt(verseIdx), title, content, tags };
+  const [bookId, chapter, verseIdx] = vId.split('_');
+  const noteData = { id: vId, bookId, chapter: parseInt(chapter), verseIdx: parseInt(verseIdx), title, content, tags };
   
-  const tx = db.transaction(["notes"], "readwrite");
-  tx.objectStore("notes").put(noteData);
-  notes[selectedVerseId] = noteData;
-  
-  closeModal('noteEditorModal');
-  renderChapter(); // Actualizar para mostrar el indicador 📄
+  try {
+    const tx = db.transaction(["notes"], "readwrite");
+    const store = tx.objectStore("notes");
+    const request = store.put(noteData);
+
+    request.onsuccess = () => {
+      notes[vId] = noteData;
+      currentNoteVerseId = null;
+      closeModal('noteEditorModal');
+      renderChapter();
+      showToast('check_circle', 'Nota guardada correctamente');
+    };
+
+    request.onerror = () => {
+      showToast('error', 'Error al guardar en la base de datos');
+    };
+  } catch (err) {
+    showToast('error', 'Error inesperado al guardar');
+  }
 }
 
 function deleteCurrentNote() {
-  if (!selectedVerseId || !confirm('¿Eliminar esta nota?')) return;
-  const tx = db.transaction(["notes"], "readwrite");
-  tx.objectStore("notes").delete(selectedVerseId);
-  delete notes[selectedVerseId];
-  closeModal('noteEditorModal');
-  renderChapter();
+  const vId = currentNoteVerseId;
+  if (!vId) {
+    showToast('error', 'No hay nota seleccionada');
+    return;
+  }
+  if (!confirm('¿Eliminar esta nota permanentemente?')) return;
+  
+  try {
+    const tx = db.transaction(["notes"], "readwrite");
+    const store = tx.objectStore("notes");
+    const request = store.delete(vId);
+
+    request.onsuccess = () => {
+      delete notes[vId];
+      currentNoteVerseId = null;
+      closeModal('noteEditorModal');
+      renderChapter();
+      showToast('delete', 'Nota eliminada');
+    };
+    request.onerror = () => {
+      showToast('error', 'Error al eliminar la nota');
+    };
+  } catch (err) {
+    showToast('error', 'Error inesperado al eliminar');
+  }
 }
 
+// ==========================================
+// VER NOTA RENDERIZADA
+// ==========================================
+function viewRenderedNote(vId) {
+  const note = notes[vId];
+  if (!note) {
+    showToast('error', 'Nota no encontrada');
+    return;
+  }
+  viewingNoteId = vId;
+  const libro = LIBROS.find(l => l.id === note.bookId) || {name: 'Desconocido'};
+  const renderedContent = parseNoteContent(note.content);
+  
+  let bodyHtml = `<div class="note-view-title">${escapeHtml(note.title)}</div>`;
+  bodyHtml += `<div style="font-size:0.85em; color:#666; margin-bottom:12px; display:flex; align-items:center; gap:4px;">
+    <span class="material-icons" style="font-size:1em;">location_on</span>
+    ${libro.name} ${note.chapter}:${note.verseIdx + 1}
+  </div>`;
+  bodyHtml += `<div class="rendered-note">${renderedContent || '<em style="color:#999;">Sin contenido</em>'}</div>`;
+  if (note.tags) {
+    bodyHtml += `<div class="note-view-tags"><span class="material-icons" style="font-size:1em;">label</span> ${escapeHtml(note.tags)}</div>`;
+  }
+  
+  document.getElementById('noteViewBody').innerHTML = bodyHtml;
+  toggleModal('noteViewModal');
+}
+
+function editNoteFromView() {
+  if (!viewingNoteId) return;
+  const vId = viewingNoteId;
+  closeModal('noteViewModal');
+  setTimeout(() => openNoteEditor(vId), 200);
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// ==========================================
+// COPIAR VERSÍCULO
+// ==========================================
+function copyVerseText() {
+  if (!selectedVerseId) return;
+  const [bookId, chapter, verseIdx] = selectedVerseId.split('_');
+  const libro = LIBROS.find(l => l.id === bookId);
+  
+  let textToCopy = '';
+  
+  if (readingMode === 'interlinear') {
+    // En modo interlineal, copiar todas las versiones disponibles
+    textToCopy = `${libro.name} ${chapter}:${parseInt(verseIdx) + 1}\n\n`;
+    interlinearVersions.forEach(vKey => {
+      if (interlinearDataCache[vKey]) {
+        const vData = interlinearDataCache[vKey];
+        const vChapter = vData.chapters[parseInt(chapter) - 1];
+        if (vChapter && vChapter[verseIdx]) {
+          textToCopy += `[${VERSIONES[vKey]}]\n${vChapter[verseIdx]}\n\n`;
+        }
+      }
+    });
+  } else {
+    const chapterData = currentBookData.chapters[chapter - 1];
+    const verseText = chapterData[verseIdx];
+    const versionName = VERSIONES[state.version];
+    textToCopy = `${libro.name} ${chapter}:${parseInt(verseIdx) + 1}\n${versionName}: ${verseText}`;
+  }
+
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(textToCopy.trim()).then(() => {
+      showToast('content_copy', 'Versículo copiado al portapapeles');
+      hideColorToolbar();
+    }).catch(() => fallbackCopy(textToCopy.trim()));
+  } else {
+    fallbackCopy(textToCopy.trim());
+  }
+}
+
+function fallbackCopy(text) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.left = '-9999px';
+  document.body.appendChild(ta);
+  ta.select();
+  try {
+    document.execCommand('copy');
+    showToast('content_copy', 'Versículo copiado al portapapeles');
+  } catch (err) {
+    showToast('error', 'Error al copiar');
+  }
+  document.body.removeChild(ta);
+  hideColorToolbar();
+}
+
+function showToast(icon, msg) {
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.innerHTML = `<span class="material-icons">${icon}</span> ${msg}`;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 2500);
+}
+
+// ==========================================
+// SINTAXIS EN NOTAS Y REFERENCIAS
+// ==========================================
 function parseNoteContent(content) {
   if (!content) return '';
   let html = content;
-  
-  // 1. Enlaces externos: (Texto$https://url)
   html = html.replace(/\(([^$]+)\$([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
-  
-  // 2. Imágenes: [url#wxh] donde '=' es auto/100%
   html = html.replace(/\[([^#]+)#(\d+|[=])x(\d+|[=])\]/g, (match, url, w, h) => {
     let style = 'max-width:100%;';
     if (w !== '=') style += `width:${w}px;`; else style += `width:100%;`;
     if (h !== '=') style += `height:${h}px;`; else style += `height:auto;`;
     return `<img src="${url}" style="${style}" alt="Imagen en nota">`;
   });
-  
-  // 3. Referencias bíblicas: (+Libro Cap:V) o (+Libro Cap:V@version)
-  // Regex para capturar: (+ [nombre libro] [cap]:[versiculo] [@version opcional] )
   html = html.replace(/\(\+([^@]+?)\s+(\d+):(\d+(?:-\d+)?)(?:@(\w+))?\)/g, (match, bookName, cap, vers, version) => {
     const cleanBook = bookName.trim();
-    const verAttr = version ? `data-version="${version}"` : 'data-all="true"';
-    return `<span class="verse-ref-link" onclick="showVerseRef('${cleanBook}', ${cap}, '${vers}', ${version ? `'${version}'` : 'null'})">📖 ${cleanBook} ${cap}:${vers}${version ? ' ('+version+')' : ''}</span>`;
+    return `<span class="verse-ref-link" onclick="showVerseRef('${cleanBook}', ${cap}, '${vers}', ${version ? `'${version}'` : 'null'})"><span class="material-icons btn-small-icon">menu_book</span> ${cleanBook} ${cap}:${vers}${version ? ' ('+version+')' : ''}</span>`;
   });
-  
-  // Convertir saltos de línea en <br>
   return html.replace(/\n/g, '<br>');
 }
 
@@ -551,7 +1029,6 @@ async function showVerseRef(bookName, cap, versRange, specificVersion) {
   modalBody.innerHTML = '<div class="loading"><div class="spinner"></div>Cargando...</div>';
   toggleModal('verseRefModal');
   
-  // Buscar el ID del libro
   const libro = LIBROS.find(l => l.name.toLowerCase() === bookName.toLowerCase());
   if (!libro) {
     modalBody.innerHTML = '<p style="color:red; text-align:center;">Libro no encontrado.</p>';
@@ -569,10 +1046,8 @@ async function showVerseRef(bookName, cap, versRange, specificVersion) {
       const chapterData = data.chapters[cap - 1];
       if (!chapterData) continue;
       
-      // Parsear rango (ej: "1-3" o "5")
       const [start, end] = versRange.split('-').map(Number);
       const actualEnd = end || start;
-      
       let versesText = [];
       for (let i = start; i <= actualEnd; i++) {
         if (chapterData[i - 1]) versesText.push(`<sup>${i}</sup> ${chapterData[i - 1]}`);
@@ -580,7 +1055,7 @@ async function showVerseRef(bookName, cap, versRange, specificVersion) {
       
       if (versesText.length > 0) {
         html += `<div class="ref-modal-verse">
-          <span class="version-tag">${vName}</span>
+          <span class="version-tag"><span class="material-icons btn-small-icon">menu_book</span> ${vName}</span>
           <span class="verse-text">${versesText.join(' ')}</span>
         </div>`;
       }
@@ -600,23 +1075,44 @@ function toggleModal(id) {
   modal.classList.toggle('active');
 }
 
-function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+function closeModal(id) { 
+  document.getElementById(id).classList.remove('active'); 
+}
 
 function renderNotesList() {
   const body = document.getElementById('notesListBody');
   const keys = Object.keys(notes).sort((a, b) => a.localeCompare(b, undefined, {numeric: true}));
   if (keys.length === 0) {
-    body.innerHTML = '<p style="text-align:center; padding:20px; color:#666;">No hay notas.</p>';
+    body.innerHTML = '<p style="text-align:center; padding:20px; color:#666;">No hay notas guardadas.</p>';
     return;
   }
   let html = '';
   keys.forEach(key => {
     const n = notes[key];
-    const libro = LIBROS.find(l => l.id === n.bookId);
-    html += `<div class="list-item" onclick="closeModal('notesListModal'); goToLocation('${n.bookId}', ${n.chapter}, ${n.verseIdx})">
-      <div class="list-item-ref">📄 ${libro.name} ${n.chapter}:${n.verseIdx + 1} <br><small style="color:#666; font-weight:normal;">${n.title}</small></div>
-      <span class="list-item-delete" onclick="event.stopPropagation(); deleteNoteById('${key}')">✕</span>
-    </div>`;
+    const libro = LIBROS.find(l => l.id === n.bookId) || {name: 'Desconocido'};
+    const renderedContent = parseNoteContent(n.content);
+    const lineColor = highlights[key] ? getColorCode(highlights[key]) : '#ccc';
+    
+    html += `
+      <div class="list-item" style="flex-direction: column; align-items: flex-start; padding: 15px;">
+        <div style="display: flex; justify-content: space-between; width: 100%; margin-bottom: 8px; align-items: center;">
+          <div class="list-item-ref" style="flex:1; cursor:pointer;" onclick="goToLocation('${n.bookId}', ${n.chapter}, ${n.verseIdx}); closeModal('notesListModal');">
+            <span class="material-icons" style="color:#6a1b9a;">sticky_note_2</span>
+            <div>
+              ${libro.name} ${n.chapter}:${n.verseIdx + 1}
+              <br><small style="color:#6a1b9a; font-weight:bold;">${escapeHtml(n.title)}</small>
+            </div>
+          </div>
+          <div style="display:flex; align-items:center;">
+            <span class="material-icons list-item-edit" onclick="event.stopPropagation(); openNoteEditor('${key}')" title="Editar nota">edit</span>
+            <span class="material-icons list-item-delete" onclick="event.stopPropagation(); deleteNoteById('${key}')" title="Eliminar nota">delete</span>
+          </div>
+        </div>
+        <div class="rendered-note" style="width:100%; font-size:0.95em; line-height:1.5; color:#333; background:#f9f9f9; padding:12px; border-radius:6px; border-left: 4px solid ${lineColor};">
+          ${renderedContent || '<em style="color:#999;">Sin contenido</em>'}
+        </div>
+        ${n.tags ? `<div style="margin-top:8px; font-size:0.85em; color:#666; display:flex; align-items:center; gap:4px;"><span class="material-icons" style="font-size:1em;">label</span> ${escapeHtml(n.tags)}</div>` : ''}
+      </div>`;
   });
   body.innerHTML = html;
 }
@@ -635,7 +1131,7 @@ function renderBookmarksList() {
     const color = highlights[key];
     html += `<div class="list-item" onclick="closeModal('bookmarksModal'); goToLocation('${bookId}', ${chapter}, ${verseIdx})">
       <div class="list-item-ref"><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${getColorCode(color)};margin-right:8px;"></span>${libro.name} ${chapter}:${parseInt(verseIdx)+1}</div>
-      <span class="list-item-delete" onclick="event.stopPropagation(); deleteHighlight('${key}')">✕</span>
+      <span class="material-icons list-item-delete" onclick="event.stopPropagation(); deleteHighlight('${key}')" title="Eliminar">delete</span>
     </div>`;
   });
   body.innerHTML = html;
@@ -687,11 +1183,7 @@ function getColorCode(className) {
 async function exportData() {
   if (typeof JSZip === 'undefined') { alert('Error: Librería JSZip no cargada. Verifica tu conexión.'); return; }
   const zip = new JSZip();
-  
-  // 1. Marcadores (JSON)
   zip.file("marcadores", JSON.stringify(highlights, null, 2));
-  
-  // 2. Notas (Texto plano con formato específico)
   let notesTxt = "";
   Object.values(notes).forEach(n => {
     notesTxt += `*/${n.title}/*\n`;
@@ -700,7 +1192,6 @@ async function exportData() {
   });
   zip.file("notas", notesTxt);
   
-  // Generar y descargar
   const blob = await zip.generateAsync({type: "blob"});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -708,7 +1199,7 @@ async function exportData() {
   a.download = `BibliaMT_Backup_${new Date().toISOString().slice(0,10)}.mbe`;
   a.click();
   URL.revokeObjectURL(url);
-  alert('✅ Datos exportados correctamente.');
+  showToast('file_download', 'Datos exportados correctamente');
 }
 
 async function importData(input) {
@@ -718,8 +1209,6 @@ async function importData(input) {
   
   try {
     const zip = await JSZip.loadAsync(file);
-    
-    // Importar marcadores
     const marcadoresFile = zip.file("marcadores");
     if (marcadoresFile) {
       const data = JSON.parse(await marcadoresFile.async("text"));
@@ -731,43 +1220,42 @@ async function importData(input) {
       }
     }
     
-    // Importar notas
     const notasFile = zip.file("notas");
     if (notasFile) {
       const text = await notasFile.async("text");
       const txN = db.transaction(["notes"], "readwrite");
       const storeN = txN.objectStore("notes");
-      
-      // Parsear formato: */titulo/* \n *|contenido|* \n *~tags~*
       const regex = /\*\/(.*?)\/\*\s*\n\*\|(.*?)\|\*\s*\n\*\~(.*?)\~\*/gs;
       let match;
       while ((match = regex.exec(text)) !== null) {
         const title = match[1].trim();
         const content = match[2].trim();
         const tags = match[3].trim();
-        // Generar ID temporal (en una app real se vincularía al versículo, aquí se importa genérico o se busca)
-        // Para simplificar la importación, buscamos si ya existe por título, si no, creamos una nota "importada"
         const tempId = "imported_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5);
         storeN.put({ id: tempId, bookId: "00", chapter: 0, verseIdx: 0, title, content, tags });
       }
     }
-    
-    alert('✅ Datos importados correctamente. La página se recargará.');
-    location.reload();
+    showToast('file_upload', 'Datos importados. Recargando...');
+    setTimeout(() => location.reload(), 1500);
   } catch (e) {
-    alert('❌ Error al importar: ' + e.message);
+    showToast('error', 'Error al importar: ' + e.message);
   }
-  input.value = ''; // Reset input
+  input.value = '';
 }
 
 // ==========================================
 // UTILIDADES Y CONFIGURACIÓN
 // ==========================================
-function updateTextSize(val) {
-  document.documentElement.style.setProperty('--text-size', val + 'em');
-  document.getElementById('textSizeLabel').textContent = Math.round(val * 100) + '%';
-  state.textSize = val;
-  localStorage.setItem('bibliaState', JSON.stringify(state));
+// ★ MODIFICADO: Tamaño de texto en pt (8 a 30)
+function updateTextSize(val, isInit = false) {
+  const ptValue = parseInt(val);
+  document.documentElement.style.setProperty('--text-size', ptValue + 'pt');
+  document.getElementById('textSizeLabel').textContent = ptValue + ' pt';
+  document.getElementById('textSizeRange').value = ptValue;
+  state.textSize = ptValue;
+  if (!isInit) {
+    localStorage.setItem('bibliaState', JSON.stringify(state));
+  }
 }
 
 function toggleContentPanel() {
@@ -780,7 +1268,7 @@ function toggleContentPanel() {
 }
 
 function renderContentPanel() {
-  let html = '<div class="content-panel"><h3>📑 Contenido del Capítulo</h3>';
+  let html = '<div class="content-panel"><h3><span class="material-icons">list</span> Contenido del Capítulo</h3>';
   let currentLevel0 = null;
   currentTopics.forEach((topic, idx) => {
     if (topic.nivel === 0) {
@@ -791,10 +1279,10 @@ function renderContentPanel() {
       const levelClass = topic.nivel === 1 ? 'topic-level-1' : 'topic-level-2';
       const indent = topic.nivel === 2 ? 'margin-left: 25px;' : '';
       html += `<div class="${levelClass}" id="topic-${idx}" style="${indent}">
-        <div class="topic-title" onclick="toggleTopic(${idx})">${topic.tema}</div>
+        <div class="topic-title" onclick="toggleTopic(${idx})"><span class="material-icons btn-small-icon">expand_more</span> ${topic.tema}</div>
         <div class="topic-preview" id="preview-${idx}">${topic.tema}</div>
         ${renderVerseLinks(topic)}
-        <button class="toggle-btn" onclick="toggleTopic(${idx})">▼ Ver más</button>
+        <button class="toggle-btn" onclick="toggleTopic(${idx})"><span class="material-icons btn-small-icon">expand_more</span> Ver más</button>
       </div>`;
     }
   });
@@ -803,13 +1291,13 @@ function renderContentPanel() {
 }
 
 function renderVerseLinks(topic) {
-  if (!topic.versiculos || topic.versiculos.trim() === '') return '<div style="color:#999; font-size:0.85em; margin-top:8px;">📖 Todo el capítulo</div>';
+  if (!topic.versiculos || topic.versiculos.trim() === '') return '<div style="color:#999; font-size:0.85em; margin-top:8px; display:flex; align-items:center; gap:4px;"><span class="material-icons btn-small-icon">menu_book</span> Todo el capítulo</div>';
   const verses = topic.versiculos.split(',').map(v => v.trim()).filter(v => v);
   let links = [];
   verses.forEach(v => {
     const range = v.split('-');
-    if (range.length === 2) links.push(`<span class="verse-link" onclick="scrollToVerse(${range[0]})">${topic.capitulo}:${range[0]}-${range[1]}</span>`);
-    else if (!isNaN(parseInt(v))) links.push(`<span class="verse-link" onclick="scrollToVerse(${parseInt(v)})">${topic.capitulo}:${v}</span>`);
+    if (range.length === 2) links.push(`<span class="verse-link" onclick="scrollToVerse(${range[0]})"><span class="material-icons btn-small-icon">menu_book</span> ${topic.capitulo}:${range[0]}-${range[1]}</span>`);
+    else if (!isNaN(parseInt(v))) links.push(`<span class="verse-link" onclick="scrollToVerse(${parseInt(v)})"><span class="material-icons btn-small-icon">menu_book</span> ${topic.capitulo}:${v}</span>`);
   });
   return `<div class="topic-verses">${links.join(' ')}</div>`;
 }
@@ -819,9 +1307,9 @@ function toggleTopic(idx) {
   const preview = document.getElementById(`preview-${idx}`);
   const btn = topic.querySelector('.toggle-btn');
   if (topic.classList.contains('expanded')) {
-    topic.classList.remove('expanded'); preview.classList.remove('expanded'); btn.textContent = '▼ Ver más';
+    topic.classList.remove('expanded'); preview.classList.remove('expanded'); btn.innerHTML = '<span class="material-icons btn-small-icon">expand_more</span> Ver más';
   } else {
-    topic.classList.add('expanded'); preview.classList.add('expanded'); btn.textContent = '▲ Ver menos';
+    topic.classList.add('expanded'); preview.classList.add('expanded'); btn.innerHTML = '<span class="material-icons btn-small-icon">expand_less</span> Ver menos';
   }
 }
 
@@ -853,7 +1341,7 @@ function normalizeText(text) { return text.toLowerCase().normalize("NFD").replac
 async function performSearch() {
   const query = document.getElementById('searchInput').value.trim();
   if (query.length < 3) { alert("Escribe al menos 3 letras."); return; }
-  const modalBody = document.getElementById('verseRefBody'); // Reutilizamos modal de referencias para resultados
+  const modalBody = document.getElementById('verseRefBody');
   document.getElementById('verseRefTitle').textContent = `Buscando: "${query}"`;
   modalBody.innerHTML = '<div class="loading"><div class="spinner"></div>Buscando...</div>';
   toggleModal('verseRefModal');
@@ -883,7 +1371,7 @@ async function performSearch() {
   }
   if (results.length === 0) modalBody.innerHTML = '<p style="text-align:center; padding:20px;">No se encontraron resultados.</p>';
   else modalBody.innerHTML = results.map(r => `<div class="list-item" style="flex-direction:column; align-items:flex-start;" onclick="closeModal('verseRefModal'); goToLocation('${r.vKey}', ${r.bookIdx}, ${r.chapter}); setTimeout(()=>scrollToVerse(${r.verseIdx+1}), 500)">
-    <div style="font-weight:bold; color:#6a1b9a; font-size:0.85em;">${r.vName} • ${r.ref}</div>
+    <div style="font-weight:bold; color:#6a1b9a; font-size:0.85em; display:flex; align-items:center; gap:4px;"><span class="material-icons btn-small-icon">menu_book</span> ${r.vName} • ${r.ref}</div>
     <div style="font-size:0.95em; margin-top:4px;">${r.text}</div>
   </div>`).join('');
 }

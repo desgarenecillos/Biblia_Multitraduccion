@@ -143,6 +143,8 @@ header{height:64px;background:var(--bg2);border-bottom:1px solid var(--border);d
 </head>
 <body>
 
+<body>
+
 <header>
   <div class="logo">
     <div class="logo-badge">JW-NL</div>
@@ -173,7 +175,12 @@ header{height:64px;background:var(--bg2);border-bottom:1px solid var(--border);d
         <button id="newBtn" class="btn primary" disabled><span class="msi sm">add</span><span>Nueva</span></button>
         <button id="bulkBtn" class="btn" disabled><span class="msi sm">link</span><span>Todas</span></button>
       </div>
-      <div class="sb-count"><span id="nCount">0</span> notas</div>
+      <div class="sb-count"><span id="nCount">0</span> notas <span id="selCount" style="color:var(--primary)"></span> <button id="deselectBtn" onclick="deselectAll()" style="display:none;margin-left:8px;padding:4px 10px;font-size:11px;background:var(--bg4);border-radius:8px;border:none;color:var(--fg);cursor:pointer">Deseleccionar</button></div>
+    </div>
+    <div id="batchTools" style="display:none;padding:8px 14px;gap:8px;flex-wrap:wrap;background:var(--bg3);border-bottom:1px solid var(--border)">
+      <button class="btn danger" onclick="batchDelete()" style="flex:1;justify-content:center;font-size:12px;background:var(--bg4);border-radius:12px"><span class="msi sm">delete</span><span>Eliminar</span></button>
+      <button class="btn" onclick="batchCopy()" style="flex:1;justify-content:center;font-size:12px;background:var(--bg4);border-radius:12px"><span class="msi sm">content_copy</span><span>Copiar</span></button>
+      <button class="btn primary" onclick="batchMerge()" style="flex:1;justify-content:center;font-size:12px;background:var(--primary-d);color:#fff;border-radius:12px"><span class="msi sm">merge_type</span><span>Fusionar</span></button>
     </div>
     <div id="nList" class="list">
       <div class="empty">
@@ -245,7 +252,6 @@ header{height:64px;background:var(--bg2);border-bottom:1px solid var(--border);d
     </div>
   </div>
 </div>
-
 <script>
 const APP_VERSION = '1.9.7';
 const APP = 'jw-notelink';
@@ -656,9 +662,10 @@ function renderList(filter = ''){
     let col = ci >= 0 && S.COLORS[ci] ? S.COLORS[ci] : '#555';
     let act = S.curId === n.NoteId ? 'act' : '';
     return `<div class="ni ${act}" onclick="openNote(${n.NoteId})">
-      <div class="dot" style="background:${col}"></div>
-      <div class="ni-title">${esc(n.Title || 'Sin título')}</div>
-      <div class="ni-prev">${esc((n.Content || '').replace(/\s+/g,' ').slice(0,100)) || 'Vacía'}</div>
+      <input type="checkbox" class="note-cb" data-id="${n.NoteId}" onclick="event.stopPropagation()" style="position:absolute;left:12px;top:16px;z-index:2;width:18px;height:18px;accent-color:var(--primary-d)">
+      <div class="dot" style="background:${col};left:38px"></div>
+      <div class="ni-title" style="padding-left:26px">${esc(n.Title || 'Sin título')}</div>
+      <div class="ni-prev" style="padding-left:26px">${esc((n.Content || '').replace(/\s+/g,' ').slice(0,100)) || 'Vacía'}</div>
     </div>`;
   }).join('');
 }
@@ -672,19 +679,18 @@ function openNote(id){
     <div class="fg"><label><span class="msi sm" style="font-size:13px">title</span> Título</label><input id="eTitle" value="${esc(n.Title || '')}"></div>
     <div class="fg"><label><span class="msi sm" style="font-size:13px">notes</span> Nota</label><textarea id="eContent">${esc(n.Content || '')}</textarea>
       <div class="link-panel">
-        <b><span class="msi sm">link</span> Enlaces bíblicos</b>
-        <div class="sub">14²16 &rarr; 14,16 &bull; 5:2-6:3 rango cruzado &bull; 37,38 fusionado</div>
-        <div class="link-row">
-          <select id="linkMode"><option value="inline">INLINE { }</option><option value="footnote">FOOTNOTE &lt; &gt;</option></select>
-          <select id="footPos"><option value="per_para">Por párrafo</option><option value="end_note">Al final</option></select>
-        </div>
-        <div class="link-row">
-          <button id="undoBtn" class="btn undo-badge" onclick="undoChange()" disabled><span class="msi sm">undo</span><span>Deshacer</span></button>
-          <button class="btn primary" onclick="aplicarActual()" style="flex:1"><span class="msi sm">check</span><span>Aplicar</span></button>
-          <button class="btn" style="background:var(--bg5)" onclick="abrirModalTexto()"><span class="msi sm">menu_book</span><span>Texto</span></button>
-          <button class="btn" onclick="limpiarTodos()"><span class="msi sm">cleaning_services</span><span>Limpiar</span></button>
-        </div>
-      </div>
+            <b><span class="msi sm">link</span> Insertar Enlaces</b>
+            <div class="sub">14²16 &rarr; 14,16 &bull; 5:2-6:3 rango cruzado &bull; 37,38 fusionado</div>
+            <div class="link-row">
+              <select id="linkMode" onchange="toggleFootPos()"><option value="inline">INLINE { }</option><option value="footnote">FOOTNOTE &lt; &gt;</option></select>
+              <select id="footPos" style="display:none"><option value="per_para">Por párrafo</option><option value="end_note">Al final de la nota</option></select>
+            </div>
+            <div class="link-row" style="margin-top:10px">
+              <button class="btn primary" onclick="aplicarActual()" style="flex:1"><span class="msi sm">check</span><span>Insertar Enlaces</span></button>
+              <button class="btn" style="background:var(--bg5)" onclick="abrirModalTexto()"><span class="msi sm">menu_book</span><span>Insertar Texto</span></button>
+              <button id="undoBtn" class="btn undo-badge" onclick="undoChange()" disabled title="Deshacer"><span class="msi sm">undo</span></button>
+            </div>
+          </div>
     </div>
     <div class="fg"><label><span class="msi sm" style="font-size:13px">palette</span> Color</label><div class="colors">${colorsHtml}</div></div>`;
   document.getElementById('sheetFoot').innerHTML = `
@@ -969,6 +975,166 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('t_vers')?.addEventListener('input', previewTxt);
   document.getElementById('t_pos')?.addEventListener('change', previewTxt);
 });
+
+
+function toggleFootPos(){
+  const mode = document.getElementById('linkMode').value;
+  const footPos = document.getElementById('footPos');
+  if(footPos) footPos.style.display = mode === 'footnote' ? 'block' : 'none';
+}
+function getSelectedNotes(){
+  return Array.from(document.querySelectorAll('.note-cb:checked')).map(cb => parseInt(cb.dataset.id));
+}
+
+function updateBatchTools(){
+  const selected = getSelectedNotes();
+  const batchTools = document.getElementById('batchTools');
+  const selCount = document.getElementById('selCount');
+  const deselectBtn = document.getElementById('deselectBtn');
+  if(batchTools && selCount && deselectBtn){
+    if(selected.length > 0){
+      batchTools.style.display = 'flex';
+      selCount.textContent = `(${selected.length} seleccionadas)`;
+      deselectBtn.style.display = 'inline-block';
+    } else {
+      batchTools.style.display = 'none';
+      selCount.textContent = '';
+      deselectBtn.style.display = 'none';
+    }
+  }
+}
+function deselectAll(){
+  document.querySelectorAll('.note-cb:checked').forEach(cb => cb.checked = false);
+  updateBatchTools();
+}
+
+function batchDelete(){
+  const ids = getSelectedNotes();
+  if(!ids.length) return;
+  if(!confirm(`¿Eliminar ${ids.length} notas seleccionadas?`)) return;
+  ids.forEach(id => { try{ S.db.run("DELETE FROM Note WHERE NoteId=?", [id]); }catch(e){} });
+  loadNotes(); renderList(document.getElementById('searchIn').value); updateBatchTools();
+  toast(`${ids.length} notas eliminadas`, 'success');
+}
+function batchCopy(){
+  const ids = getSelectedNotes();
+  if(!ids.length) return;
+  const texts = S.notes.filter(n => ids.includes(n.NoteId)).map(n => `--- ${n.Title || 'Sin título'} ---\n${n.Content || ''}`).join('\n\n');
+  navigator.clipboard.writeText(texts).then(() => toast('Contenido copiado al portapapeles', 'success')).catch(() => toast('Error al copiar', 'error'));
+}
+function batchMerge(){
+  const ids = getSelectedNotes();
+  if(ids.length < 2) return toast('Selecciona al menos 2 notas para fusionar', 'error');
+  const selectedNotes = S.notes.filter(n => ids.includes(n.NoteId));
+  const topics = [...new Set(selectedNotes.map(n => n.Title || 'Sin título').filter(t => t !== 'Sin título'))];
+  let topicOptions = topics.map(t => `<option value="${esc(t)}">${esc(t)}</option>`).join('');
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;z-index:80;background:rgba(0,0,0,0.6);backdrop-filter:blur(6px);display:grid;place-items:center';
+  modal.innerHTML = `
+    <div style="background:var(--bg2);width:min(420px,92vw);border-radius:20px;padding:20px;border:1px solid var(--border);color:var(--fg)">
+      <h3 style="margin-bottom:14px;display:flex;align-items:center;gap:8px"><span class="msi">merge_type</span> Fusionar Notas</h3>
+      <div class="fg"><label>Tema para la nota fusionada</label>
+        <input list="mergeTopics" id="mergeTopicInput" placeholder="Escribe o elige un tema" style="width:100%;padding:12px;border-radius:12px;background:var(--bg4);color:var(--fg);border:1px solid var(--border)">
+        <datalist id="mergeTopics">${topicOptions}<option value="Notas Fusionadas"></option></datalist>
+      </div>
+      <div class="fg"><label>Vista previa</label><textarea readonly style="min-height:150px;font-size:12px;width:100%;padding:12px;border-radius:12px;background:var(--bg4);color:var(--fg);border:1px solid var(--border)">${esc(selectedNotes.map(n => n.Content).join('\n\n---\n\n'))}</textarea></div>
+      <div style="display:flex;gap:8px;margin-top:14px">
+        <button class="btn" style="flex:1" onclick="this.closest('div').parentElement.parentElement.remove()">Cancelar</button>
+        <button class="btn primary" style="flex:1" id="confirmMergeBtn">Fusionar</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  document.getElementById('confirmMergeBtn').onclick = () => {
+    const newTitle = document.getElementById('mergeTopicInput').value || 'Notas Fusionadas';
+    const newContent = selectedNotes.map(n => n.Content || '').join('\n\n---\n\n');
+    const now = isoDate();
+    const g = crypto.randomUUID();
+    try {
+      S.db.run("INSERT INTO Note(Guid,Title,Content,LastModified) VALUES(?,?,?,?)", [g, newTitle, newContent, now]);
+      ids.forEach(id => { try{ S.db.run("DELETE FROM Note WHERE NoteId=?", [id]); }catch(e){} });
+      loadNotes(); renderList(document.getElementById('searchIn').value); updateBatchTools();
+      toast('Notas fusionadas correctamente', 'success');
+    } catch(e) { toast('Error al fusionar: ' + e.message, 'error'); }
+    modal.remove();
+  };
+}
+document.addEventListener('change', (e) => { if(e.target.classList.contains('note-cb')) updateBatchTools(); });
+
+function toggleFootPos(){
+  const mode = document.getElementById('linkMode').value;
+  const footPos = document.getElementById('footPos');
+  if(footPos) footPos.style.display = mode === 'footnote' ? 'block' : 'none';
+}
+function getSelectedNotes(){
+  return Array.from(document.querySelectorAll('.note-cb:checked')).map(cb => parseInt(cb.dataset.id));
+}
+function updateBatchTools(){
+  const selected = getSelectedNotes();
+  const batchTools = document.getElementById('batchTools');
+  const selCount = document.getElementById('selCount');
+  if(batchTools && selCount){
+    if(selected.length > 0){
+      batchTools.style.display = 'flex';
+      selCount.textContent = `(${selected.length} seleccionadas)`;
+    } else {
+      batchTools.style.display = 'none';
+      selCount.textContent = '';
+    }
+  }
+}
+function batchDelete(){
+  const ids = getSelectedNotes();
+  if(!ids.length) return;
+  if(!confirm(`¿Eliminar ${ids.length} notas seleccionadas?`)) return;
+  ids.forEach(id => { try{ S.db.run("DELETE FROM Note WHERE NoteId=?", [id]); }catch(e){} });
+  loadNotes(); renderList(document.getElementById('searchIn').value); updateBatchTools();
+  toast(`${ids.length} notas eliminadas`, 'success');
+}
+function batchCopy(){
+  const ids = getSelectedNotes();
+  if(!ids.length) return;
+  const texts = S.notes.filter(n => ids.includes(n.NoteId)).map(n => `--- ${n.Title || 'Sin título'} ---\n${n.Content || ''}`).join('\n\n');
+  navigator.clipboard.writeText(texts).then(() => toast('Contenido copiado al portapapeles', 'success')).catch(() => toast('Error al copiar', 'error'));
+}
+function batchMerge(){
+  const ids = getSelectedNotes();
+  if(ids.length < 2) return toast('Selecciona al menos 2 notas para fusionar', 'error');
+  const selectedNotes = S.notes.filter(n => ids.includes(n.NoteId));
+  const topics = [...new Set(selectedNotes.map(n => n.Title || 'Sin título').filter(t => t !== 'Sin título'))];
+  let topicOptions = topics.map(t => `<option value="${esc(t)}">${esc(t)}</option>`).join('');
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;z-index:80;background:rgba(0,0,0,0.6);backdrop-filter:blur(6px);display:grid;place-items:center';
+  modal.innerHTML = `
+    <div style="background:var(--bg2);width:min(420px,92vw);border-radius:20px;padding:20px;border:1px solid var(--border);color:var(--fg)">
+      <h3 style="margin-bottom:14px;display:flex;align-items:center;gap:8px"><span class="msi">merge_type</span> Fusionar Notas</h3>
+      <div class="fg"><label>Tema para la nota fusionada</label>
+        <input list="mergeTopics" id="mergeTopicInput" placeholder="Escribe o elige un tema" style="width:100%;padding:12px;border-radius:12px;background:var(--bg4);color:var(--fg);border:1px solid var(--border)">
+        <datalist id="mergeTopics">${topicOptions}<option value="Notas Fusionadas"></option></datalist>
+      </div>
+      <div class="fg"><label>Vista previa</label><textarea readonly style="min-height:150px;font-size:12px;width:100%;padding:12px;border-radius:12px;background:var(--bg4);color:var(--fg);border:1px solid var(--border)">${esc(selectedNotes.map(n => n.Content).join('\n\n---\n\n'))}</textarea></div>
+      <div style="display:flex;gap:8px;margin-top:14px">
+        <button class="btn" style="flex:1" onclick="this.closest('div').parentElement.parentElement.remove()">Cancelar</button>
+        <button class="btn primary" style="flex:1" id="confirmMergeBtn">Fusionar</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  document.getElementById('confirmMergeBtn').onclick = () => {
+    const newTitle = document.getElementById('mergeTopicInput').value || 'Notas Fusionadas';
+    const newContent = selectedNotes.map(n => n.Content || '').join('\n\n---\n\n');
+    const now = isoDate();
+    const g = crypto.randomUUID();
+    try {
+      S.db.run("INSERT INTO Note(Guid,Title,Content,LastModified) VALUES(?,?,?,?)", [g, newTitle, newContent, now]);
+      ids.forEach(id => { try{ S.db.run("DELETE FROM Note WHERE NoteId=?", [id]); }catch(e){} });
+      loadNotes(); renderList(document.getElementById('searchIn').value); updateBatchTools();
+      toast('Notas fusionadas correctamente', 'success');
+    } catch(e) { toast('Error al fusionar: ' + e.message, 'error'); }
+    modal.remove();
+  };
+}
+document.addEventListener('change', (e) => { if(e.target.classList.contains('note-cb')) updateBatchTools(); });
 
 initSQL();
 </script>

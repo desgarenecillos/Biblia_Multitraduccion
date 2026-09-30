@@ -793,7 +793,15 @@ document.getElementById('expBtn').addEventListener('click', async () => {
 });
 
 function openHelp(){
-  document.getElementById('helpBody').innerHTML = `<div class="warning-box"><b>ATENCIÓN</b><br>Conserva siempre una copia de seguridad de tu archivo .jwlibrary original.</div><h4>Reglas</h4><ul><li>Versículos mismo libro/capítulo: coma <code>,</code></li><li>Otro libro o capítulo: punto y coma <code>;</code></li><li>La función Limpiar borra SOLO links de JW, no toca texto personal.</li></ul>`;
+  const rows = bibleBooks.map(b => `<tr><td><b>${b.name}</b></td><td class="abbr">${b.abbr.slice(0,6).join(', ')}${b.abbr.length>6 ? ', ...':''}</td></tr>`).join('');
+  document.getElementById('helpBody').innerHTML = `
+    <div class="warning-box"><b>⚠️ ATENCIÓN</b><br>Conserva siempre una copia de seguridad...</div>
+    <div class="version-box"><span class="ver-num">v1.9.7 – Cómo escribe los textos bíblicos</span>...</div>
+    <h4>Cómo debes escribir las citas</h4>
+    <div class="example">Génesis 1:1\nGe 1:1\nGn 1:1,5\nGén 1:1-3...</div>
+    <h4>Reglas de separación</h4>...
+    <table class="help-table"><thead><tr><th>Libro</th><th>Abreviaturas aceptadas</th></tr></thead><tbody>${rows}</tbody></table>
+  `;
   document.getElementById('helpModal').classList.add('on');
 }
 function closeHelp(){ document.getElementById('helpModal').classList.remove('on'); }

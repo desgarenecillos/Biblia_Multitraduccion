@@ -1,1382 +1,3008 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Biblia Multi-Traducción</title>
+    <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+    <title>Título de la página</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiB2aWV3Qm94PSIwIDAgNTEyIDUxMiI+PHJlY3Qgd2lkdGg9IjUxMiIgaGVpZ2h0PSI1MTIiIHJ4PSIxMTAiIGZpbGw9IiM0YTZkYTciLz48dGV4dCB4PSI1MCUiIHk9IjQ2JSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9IlJvYm90byIgZm9udC13ZWlnaHQ9IjgwMCIgZm9udC1zaXplPSIxMTUiIGZpbGw9IndoaXRlIj5KVy1OTDwvdGV4dD48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSgyNTYsIDM5NSkiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMTYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgZmlsbD0ibm9uZSI+PGxpbmUgeDE9IjAiIHkxPSItNTAiIHgyPSIwIiB5Mj0iMTAiLz48cG9seWxpbmUgcG9pbnRzPSItMjIsLTI4IDAsLTUwIDIyLC0yOCIvPjxsaW5lIHgxPSIwIiB5MT0iMTAiIHgyPSItNDIiIHkyPSI2OCIvPjxsaW5lIHgxPSIwIiB5MT0iMTAiIHgyPSI0MiIgeTI9IjY4Ii8+PC9nPjwvc3ZnPg==">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&family=Roboto:wght@300;400;500;700&family=Merriweather:wght@300;400;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#6a1b9a">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="application-name" content="Biblia MT">
-<link rel="apple-touch-icon" href="icon-192.png">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/sql-wasm.js"></script>
+    <style>
+/* =========================================================
+   RESET Y VARIABLES
+   ========================================================= */
+*{margin:0;padding:0;box-sizing:border-box}
 
-<style>
-  :root { --text-size: 14pt; --primary: #6a1b9a; --primary-light: #f3e5f5; }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f5f5f7; color: #1a1a2e; min-height: 100vh; padding-bottom: 80px; font-size: var(--text-size); }
-  
-  header { background: linear-gradient(135deg, #6a1b9a 0%, #4a148c 100%); color: white; padding: 12px 15px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.3); }
-  h1 { font-size: 0.95em; margin-bottom: 10px; text-align: center; opacity: 0.95; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; }
-  
-  .selectors { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 10px; }
-  select { padding: 8px; border: none; border-radius: 6px; background: rgba(255,255,255,0.15); color: white; font-size: 0.85em; }
-  select option { background: #6a1b9a; color: white; }
+:root{
+  --bg:#121212;
+  --bg2:#1a1a1a;
+  --bg3:#1f1f1f;
+  --bg4:#252525;
+  --bg5:#2f2f2f;
+  --fg:#e8e6ea;
+  --fg2:#b4b0ba;
+  --fg3:#7a757f;
+  --primary:#8B7FD4;
+  --primary-d:#6750A4;
+  --accent:#CF6679;
+  --warn:#f59e0b;
+  --ok:#4ade80;
+  --border:#2d2d2d;
+  --header-h:56px;
+  --tabs-h:auto;
+}
 
-  .search-box { display: flex; gap: 8px; margin-top: 10px; }
-  .search-box input { flex: 1; padding: 8px; border: none; border-radius: 6px; font-size: 0.9em; }
-  .search-box button { padding: 8px 12px; border: none; border-radius: 6px; background: #e94560; color: white; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+html,body{
+  height:100%;
+  height:100dvh;
+  overflow:hidden;
+  font-family:'Roboto',system-ui,sans-serif;
+  background:var(--bg);
+  color:var(--fg);
+  font-size:14px;
+  -webkit-font-smoothing:antialiased;
+  -webkit-tap-highlight-color:transparent;
+}
 
-  /* ★ NUEVO: Botón interlineal en el header */
-  .interlinear-btn { padding: 8px; border: none; border-radius: 6px; background: rgba(255,255,255,0.2); color: white; font-size: 0.85em; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; width: 100%; }
-  .interlinear-btn:active { background: rgba(255,255,255,0.3); }
+/* Estructura flex vertical: header + tabs + app */
+body{
+  display:flex;
+  flex-direction:column;
+}
 
-  .nav-buttons { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; background: white; border-bottom: 1px solid #e0e0e0; position: sticky; top: 125px; z-index: 99; gap: 8px; flex-wrap: wrap; }
-  button.nav-btn { padding: 8px 10px; border: none; border-radius: 6px; background: #6a1b9a; color: white; cursor: pointer; font-size: 0.8em; font-weight: 600; display: flex; align-items: center; gap: 4px; }
-  button.nav-btn:disabled { background: #ccc; }
-  button.nav-btn.active { background: #8e24aa; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-  button.nav-btn.settings { background: #546e7a; }
+/* =========================================================
+   ICONOS MATERIAL
+   ========================================================= */
+.msi{
+  font-family:'Material Symbols Outlined';
+  font-size:20px;
+  line-height:1;
+  vertical-align:middle;
+  user-select:none;
+}
+.msi.sm{font-size:16px}
+.msi.lg{font-size:24px}
+.msi.xl{font-size:32px}
 
-  #content { padding: 15px; line-height: 1.8; max-width: 800px; margin: 0 auto; }
-  
-  .verse { display: inline; padding: 2px 4px; border-radius: 4px; cursor: pointer; transition: background 0.2s; position: relative; }
-  .verse:active { transform: scale(0.98); }
-  .verse-num { color: #6a1b9a; font-weight: bold; font-size: 0.75em; vertical-align: super; margin-right: 3px; user-select: none; display: inline-flex; align-items: center; gap: 2px; }
-  
-  .verse.hl-orange { background-color: #ffcc80; }
-  .verse.hl-yellow { background-color: #fff9c4; }
-  .verse.hl-green { background-color: #c8e6c9; }
-  .verse.hl-blue { background-color: #bbdefb; }
-  .verse.hl-purple { background-color: #e1bee7; }
-  
-  .verse.scroll-to { outline: 3px solid white; outline-offset: 2px; box-shadow: 0 0 0 3px #6a1b9a; animation: pulseBorder 1s ease-in-out; }
-  @keyframes pulseBorder { 0%, 100% { box-shadow: 0 0 0 3px #6a1b9a; } 50% { box-shadow: 0 0 0 6px #6a1b9a; } }
+/* =========================================================
+   HEADER
+   ========================================================= */
+header{
+  height:var(--header-h);
+  background:var(--bg2);
+  border-bottom:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 12px;
+  flex-shrink:0;
+  z-index:10;
+}
+.logo{display:flex;align-items:center;gap:10px;min-width:0}
+.logo-badge{
+  width:34px;height:34px;
+  border-radius:10px;
+  background:var(--primary-d);
+  display:grid;place-items:center;
+  overflow:hidden;flex-shrink:0;
+}
+.logo-badge svg{display:block;width:100%;height:100%}
+.logo-text{
+  font-weight:700;font-size:14px;
+  display:flex;align-items:center;gap:6px;
+  white-space:nowrap;
+}
+.version-badge{
+  font-size:9px;font-weight:600;
+  background:var(--primary-d);color:#fff;
+  padding:2px 6px;border-radius:10px;
+  font-family:'Roboto Mono',monospace;
+}
+.logo-sub{
+  font-size:10px;color:var(--fg3);
+  white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;
+  max-width:180px;
+}
+.hdr-actions{display:flex;gap:2px;align-items:center}
 
-  .note-indicator { cursor: pointer; vertical-align: super; margin-left: 2px; color: #6a1b9a; display: inline-flex; align-items: center; }
-  .note-indicator:hover { transform: scale(1.2); }
+/* =========================================================
+   BOTONES
+   ========================================================= */
+.btn{
+  border:none;background:transparent;color:var(--fg);
+  cursor:pointer;
+  display:inline-flex;align-items:center;gap:6px;
+  padding:8px 12px;border-radius:20px;
+  font-size:13px;font-weight:500;white-space:nowrap;
+  font-family:inherit;
+  transition:background .15s;
+}
+.btn:hover{background:rgba(255,255,255,.08)}
+.btn.primary{background:var(--primary-d);color:#fff}
+.btn.primary:hover{background:#7968c0}
+.btn.icon{width:38px;height:38px;justify-content:center;border-radius:50%;padding:0}
+.btn[disabled]{opacity:.35;pointer-events:none}
 
-  .version-info { text-align: center; padding: 12px; background: #e3f2fd; color: #0f3460; font-size: 0.9em; border-radius: 6px; margin-bottom: 20px; font-weight: 600; }
-  .loading { text-align: center; padding: 40px; color: #666; }
-  .spinner { border: 3px solid #f3f3f3; border-top: 3px solid #6a1b9a; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 15px; }
-  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+/* =========================================================
+   TABS
+   ========================================================= */
+.main-tabs{
+  display:flex;
+  gap:6px;
+  padding:8px 12px;
+  background:var(--bg2);
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+  overflow-x:auto;
+  scrollbar-width:none;
+}
+.main-tabs::-webkit-scrollbar{display:none}
+.main-tab{
+  padding:8px 14px 6px 14px;
+  border-radius:20px;
+  background:var(--bg3);
+  cursor:pointer;
+  font-size:13px;
+  display:flex;gap:6px;align-items:center;
+  border:1px solid transparent;
+  border-bottom-width:4px;
+  flex-shrink:0;
+  transition:border-color .15s;
+  user-select:none;
+}
+.main-tab.active{
+  background:var(--bg3);
+  color:#fff;
+  border-color:var(--border);
+  border-bottom-color:var(--primary);
+}
+.cnt{
+  background:rgba(0,0,0,.4);
+  padding:1px 7px;border-radius:10px;
+  font-size:11px;font-family:'Roboto Mono',monospace;
+}
 
-  .color-toolbar { position: absolute; background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); padding: 8px; display: none; z-index: 150; animation: fadeIn 0.2s; }
-  .color-toolbar.active { display: flex; gap: 6px; }
-  @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
-  .color-btn { width: 36px; height: 36px; border-radius: 50%; border: 2px solid #ddd; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-  .color-btn:active { transform: scale(0.9); }
-  .color-btn.orange { background: #fff3e0; border-color: #ff9800; color: #ff9800; } 
-  .color-btn.yellow { background: #fffde7; border-color: #fbc02d; color: #fbc02d; } 
-  .color-btn.green { background: #e8f5e9; border-color: #4caf50; color: #4caf50; }
-  .color-btn.blue { background: #e3f2fd; border-color: #2196f3; color: #2196f3; } 
-  .color-btn.purple { background: #f3e5f5; border-color: #9c27b0; color: #9c27b0; } 
-  .color-btn.delete { background: #ffebee; border-color: #f44336; color: #f44336; }
-  .color-btn.note { background: #f3e5f5; border-color: #6a1b9a; color: #6a1b9a; }
-  .color-btn.copy { background: #eceff1; border-color: #607d8b; color: #607d8b; }
+/* =========================================================
+   LAYOUT (App + Sidebar)
+   ========================================================= */
+.app{
+  display:flex;
+  flex:1;
+  overflow:hidden;
+  min-height:0;
+}
+.sidebar{
+  flex:1;
+  width:100%;
+  background:var(--bg3);
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  position:relative;
+  min-height:0;
+}
 
-  /* ★ NUEVO: Estilos para modo interlineal */
-  .interlinear-block { display: block; margin: 8px 0; padding: 8px; border-radius: 6px; cursor: pointer; transition: background 0.2s; border-left: 3px solid transparent; }
-  .interlinear-block:active { transform: scale(0.99); }
-  .interlinear-block.hl-orange { background-color: #ffcc80; }
-  .interlinear-block.hl-yellow { background-color: #fff9c4; }
-  .interlinear-block.hl-green { background-color: #c8e6c9; }
-  .interlinear-block.hl-blue { background-color: #bbdefb; }
-  .interlinear-block.hl-purple { background-color: #e1bee7; }
-  .interlinear-block.scroll-to { outline: 3px solid white; outline-offset: 2px; box-shadow: 0 0 0 3px #6a1b9a; animation: pulseBorder 1s ease-in-out; }
-  .interlinear-line { display: block; padding: 4px 0; border-bottom: 1px dashed rgba(0,0,0,0.1); line-height: 1.6; }
-  .interlinear-line:last-child { border-bottom: none; }
-  .interlinear-line .version-tag { display: inline-block; background: #6a1b9a; color: white; padding: 1px 6px; border-radius: 3px; font-size: 0.7em; margin-right: 6px; font-weight: 600; vertical-align: middle; }
-  .interlinear-line .verse-num-inline { color: #6a1b9a; font-weight: bold; font-size: 0.75em; vertical-align: super; margin-right: 3px; display: inline-flex; align-items: center; gap: 2px; }
+/* =========================================================
+   SIDEBAR TOP
+   ========================================================= */
+.sb-top{
+  padding:12px;
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+.sb-search-row{
+  display:flex;gap:8px;
+}
+.search-bar{
+  flex:1;
+  display:flex;align-items:center;
+  background:var(--bg4);
+  border-radius:24px;
+  padding:0 14px;gap:8px;
+  min-width:0;
+}
+.search-bar .msi{color:var(--fg3);flex-shrink:0}
+.search-bar input{
+  flex:1;background:transparent;border:none;outline:none;
+  color:var(--fg);padding:10px 0;
+  font-family:inherit;font-size:14px;
+  min-width:0;
+}
+.btn-new-note{
+  padding:0;width:42px;height:42px;
+  border-radius:12px;
+  justify-content:center;flex-shrink:0;
+}
+.tag-filter{
+  margin-top:8px;width:100%;
+  padding:8px 12px;border-radius:12px;
+  background:var(--bg4);
+  border:1px solid var(--border);
+  color:var(--fg);
+  font-family:inherit;font-size:12px;
+  outline:none;cursor:pointer;
+  appearance:none;
+  -webkit-appearance:none;
+}
+.sb-count{
+  font-size:11px;color:var(--fg3);
+  margin-top:8px;
+  text-transform:uppercase;
+  letter-spacing:.5px;
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+}
+.btn-deselect{
+  display:none;
+  margin-left:auto;
+  padding:4px 10px;
+  font-size:11px;
+  background:var(--bg4);
+  border-radius:8px;border:none;
+  color:var(--fg);cursor:pointer;
+}
 
-  .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 200; justify-content: center; align-items: center; backdrop-filter: blur(3px); }
-  .modal.active { display: flex; }
-  .modal-content { background: white; width: 95%; max-width: 600px; max-height: 90vh; border-radius: 12px; padding: 20px; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
-  .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-  .close-modal { background: none; border: none; cursor: pointer; color: #666; display: flex; align-items: center; justify-content: center; }
+/* =========================================================
+   LISTA (ocupa TODO el alto restante)
+   ========================================================= */
+.list{
+  flex:1 1 auto;
+  overflow-y:auto;
+  overflow-x:hidden;
+  padding:8px;
+  padding-bottom:90px;
+  -webkit-overflow-scrolling:touch;
+  min-height:0;
+}
+.ni{
+  padding:12px 14px 12px 56px;
+  border-radius:12px;
+  cursor:pointer;
+  position:relative;
+  border:1px solid transparent;
+  border-left-width:5px;
+  margin-bottom:4px;
+  transition:background .15s;
+}
+.ni:hover{background:var(--bg4)}
+.ni.act{background:var(--bg5);border-color:var(--primary-d)}
+.dot{
+  width:12px;height:12px;border-radius:50%;
+  position:absolute;top:17px;left:34px;
+}
+.ni-title{
+  font-weight:500;font-size:14px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  line-height:1.4;
+}
+.ni-prev{
+  font-size:12px;color:var(--fg3);
+  margin-top:4px;
+  display:-webkit-box;
+  -webkit-line-clamp:3;
+  -webkit-box-orient:vertical;
+  overflow:hidden;
+  line-height:1.4;
+  word-break:break-word;
+}
+.ni-loc{
+  font-size:10px;
+  color:var(--primary);
+  margin-top:4px;
+  opacity:.85;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.empty{
+  padding:40px 20px;text-align:center;
+  color:var(--fg3);font-size:13px;
+}
+.empty .msi{
+  font-size:48px;opacity:.3;
+  margin-bottom:12px;display:block;
+}
+.drop{
+  margin:16px 0;
+  border:2px dashed var(--border);
+  border-radius:16px;
+  padding:24px;text-align:center;
+  cursor:pointer;
+  transition:border-color .15s;
+}
+.drop:hover{border-color:var(--primary)}
 
-  .note-editor-modal .modal-content { max-width: 95%; height: 95vh; display: flex; flex-direction: column; }
-  .note-editor-modal input, .note-editor-modal textarea { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 6px; font-family: inherit; }
-  .note-editor-modal input.title-input { font-size: 1.3em; font-weight: bold; border: none; border-bottom: 2px solid #6a1b9a; outline: none; }
-  .note-editor-modal textarea { flex: 1; resize: none; font-size: 1em; line-height: 1.6; }
-  .note-editor-modal .tags-input { font-size: 0.9em; color: #666; }
-  .note-editor-modal .editor-actions { display: flex; gap: 10px; margin-top: 10px; }
-  .note-editor-modal button { flex: 1; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
-  .btn-save { background: #6a1b9a; color: white; }
-  .btn-cancel { background: #e0e0e0; color: #333; }
-  .btn-delete-note { background: #e94560; color: white; }
+/* =========================================================
+   BARRA BATCH FLOTANTE
+   ========================================================= */
+.batch-bar{
+  position:absolute;
+  bottom:12px;left:12px;right:12px;
+  z-index:5;
+  display:flex;
+  padding:8px;gap:6px;
+  flex-wrap:wrap;
+  background:var(--bg5);
+  border-radius:16px;
+  border:1px solid var(--border);
+  box-shadow:0 8px 24px rgba(0,0,0,.55);
+  transform:translateY(140px);
+  opacity:0;pointer-events:none;
+  transition:transform .3s cubic-bezier(.32,.72,0,1), opacity .3s;
+}
+.batch-bar.on{transform:translateY(0);opacity:1;pointer-events:auto}
+.batch-count-group{
+  display:flex;align-items:center;gap:6px;
+  padding:0 8px;flex-shrink:0;
+}
+.batch-count-group .msi{color:var(--primary)}
+.batch-count-group b{font-size:14px;color:var(--primary)}
+.batch-btn{
+  flex:1;
+  justify-content:center;
+  background:var(--bg4);
+  border-radius:10px;
+  font-size:12px;padding:8px 8px;
+  min-width:0;
+}
+.batch-btn-danger{color:var(--accent)}
 
-  .rendered-note a { color: #1e88e5; text-decoration: underline; }
-  .rendered-note .verse-ref-link { color: #6a1b9a; font-weight: bold; cursor: pointer; background: #f3e5f5; padding: 2px 6px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px; }
-  .rendered-note .verse-ref-link:hover { background: #e1bee7; }
-  .rendered-note img { max-width: 100%; border-radius: 8px; margin: 10px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+/* =========================================================
+   SHEET (editor)
+   ========================================================= */
+.overlay{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,.5);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+  opacity:0;pointer-events:none;
+  transition:.3s;z-index:20;
+}
+.overlay.on{opacity:1;pointer-events:auto}
 
-  .note-view-modal .modal-content { max-width: 95%; max-height: 90vh; }
-  .note-view-body { padding: 15px; background: #fafafa; border-radius: 8px; line-height: 1.7; font-size: 1em; color: #333; }
-  .note-view-body .note-view-title { font-size: 1.3em; font-weight: bold; color: #6a1b9a; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 2px solid #6a1b9a; }
-  .note-view-body .note-view-tags { margin-top: 12px; font-size: 0.85em; color: #666; display: flex; align-items: center; gap: 4px; }
-  .note-view-actions { display: flex; gap: 10px; margin-top: 15px; }
-  .note-view-actions button { flex: 1; padding: 10px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+.sheet{
+  position:fixed;left:0;right:0;bottom:0;
+  background:var(--bg2);
+  border-radius:24px 24px 0 0;
+  max-height:93vh;max-height:93dvh;
+  transform:translateY(110%);
+  transition:.38s cubic-bezier(.32,.72,0,1);
+  z-index:30;
+  display:flex;flex-direction:column;
+  box-shadow:0 -10px 40px rgba(0,0,0,.4);
+}
+.sheet.on{transform:translateY(0)}
+.handle{
+  width:36px;height:5px;
+  background:var(--fg3);border-radius:99px;
+  margin:10px auto 6px;flex-shrink:0;
+}
+.sheet-head{
+  padding:8px 20px 12px;
+  display:flex;justify-content:space-between;align-items:center;
+  border-bottom:1px solid var(--border);
+}
+.sheet-head b{font-size:16px}
+.sheet-body{flex:1;overflow:auto;padding:16px 20px 10px}
+.sheet-foot{
+  padding:14px 20px 24px;
+  padding-bottom:calc(20px + env(safe-area-inset-bottom));
+  border-top:1px solid var(--border);
+  background:var(--bg2);
+  display:flex;gap:8px;flex-wrap:wrap;
+}
+.foot-spacer{flex:1}
+.danger-btn{color:var(--accent)}
 
-  .settings-group { margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-radius: 8px; }
-  .settings-group h3 { margin-bottom: 10px; color: #6a1b9a; font-size: 1em; display: flex; align-items: center; gap: 8px; }
-  .settings-group button { width: 100%; padding: 10px; margin-top: 8px; border: none; border-radius: 6px; background: #6a1b9a; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
-  .settings-group input[type="range"] { width: 100%; }
+/* =========================================================
+   FORM
+   ========================================================= */
+.fg{margin-bottom:14px}
+.fg label{
+  font-size:11px;font-weight:700;
+  letter-spacing:.06em;text-transform:uppercase;
+  color:var(--fg3);margin-bottom:6px;display:block;
+}
+.fg input,.fg textarea,.fg select{
+  width:100%;padding:12px 14px;
+  border:1px solid var(--border);
+  border-radius:12px;
+  font-size:14px;
+  background:var(--bg4);
+  outline:none;color:var(--fg);
+  font-family:inherit;
+}
+.fg input:focus,.fg textarea:focus,.fg select:focus{
+  border-color:var(--primary-d);
+}
+.fg textarea{
+  min-height:220px;line-height:1.7;
+  font-family:'Merriweather',serif;resize:none;
+}
+.fg textarea.input-value{
+  min-height:200px;
+  font-family:'Roboto Mono',monospace;
+  font-size:13px;
+}
+.loc-card{
+  background:rgba(139,127,212,.1);
+  border:1px solid rgba(139,127,212,.25);
+  border-radius:10px;
+  padding:10px 12px;
+  margin-bottom:12px;
+  font-size:12px;
+  display:flex;align-items:flex-start;gap:8px;
+}
+.loc-card .msi{color:var(--primary);margin-top:2px;flex-shrink:0}
+.loc-card-text{line-height:1.5;font-weight:500;word-break:break-word}
+.link-tools{
+  background:var(--bg3);
+  border-radius:12px;
+  padding:10px;
+  margin-top:8px;
+  display:flex;gap:8px;flex-wrap:wrap;
+}
+.link-tools select{
+  flex:1;min-width:120px;
+  padding:10px;border-radius:10px;
+  background:var(--bg4);
+  color:var(--fg);
+  border:1px solid var(--border);
+  font-family:inherit;font-size:13px;
+  outline:none;
+}
+.link-tools .btn{flex:1;justify-content:center}
+.undo-btn{
+  background:var(--bg4);
+  position:relative;
+  padding:8px 12px;
+  flex:0 0 auto!important;
+}
+.undo-count{
+  display:none;
+  position:absolute;top:-4px;right:-4px;
+  background:var(--warn);color:#000;
+  font-size:10px;font-weight:700;
+  border-radius:8px;padding:1px 6px;
+  min-width:16px;justify-content:center;
+}
+.color-picker{display:flex;gap:8px;flex-wrap:wrap}
+.color{
+  width:32px;height:32px;border-radius:50%;
+  cursor:pointer;
+  border:3px solid transparent;
+  transition:transform .15s, border-color .15s;
+}
+.color:hover{transform:scale(1.1)}
+.color.sel{border-color:var(--fg)}
 
-  /* ★ NUEVO: Switch toggle para modo interlineal */
-  .mode-switch { display: flex; gap: 8px; margin-top: 10px; }
-  .mode-switch button { flex: 1; padding: 10px; border: 2px solid #ddd; border-radius: 6px; background: white; color: #333; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s; }
-  .mode-switch button.active { background: #6a1b9a; color: white; border-color: #6a1b9a; }
+/* =========================================================
+   MODAL IMPORT
+   ========================================================= */
+.import-modal{
+  position:fixed;inset:0;z-index:50;
+  display:none;
+}
+.import-modal.on{display:grid;place-items:center}
+.import-bg{
+  position:absolute;inset:0;
+  background:rgba(0,0,0,.7);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+}
+.import-box{
+  position:relative;
+  background:var(--bg2);
+  width:min(860px,96vw);
+  max-height:92vh;max-height:92dvh;
+  border-radius:20px;
+  border:1px solid var(--border);
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+.import-head{
+  padding:16px 20px;
+  border-bottom:1px solid var(--border);
+  display:flex;justify-content:space-between;align-items:center;
+  flex-shrink:0;
+}
+.import-head h2{
+  font-size:16px;font-weight:500;
+  display:flex;align-items:center;gap:8px;
+}
+.import-body{
+  padding:20px;
+  overflow:auto;
+  flex:1;
+  min-height:0;
+}
+.import-drop{
+  border:2px dashed var(--border);
+  border-radius:16px;
+  padding:28px 20px;text-align:center;
+  cursor:pointer;background:var(--bg3);
+  display:block;
+  transition:border-color .15s;
+}
+.import-drop:hover{border-color:var(--primary)}
+.import-drop-title{margin-top:8px;font-size:14px}
+.import-drop-hint{
+  font-size:11px;color:var(--fg3);margin-top:4px;
+}
 
-  /* ★ NUEVO: Estilos para modal de ayuda */
-  .help-section { margin-bottom: 18px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
-  .help-section:last-child { border-bottom: none; }
-  .help-section h4 { color: #6a1b9a; font-size: 1em; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
-  .help-section p, .help-section li { font-size: 0.92em; line-height: 1.6; color: #444; }
-  .help-section ul { padding-left: 20px; margin-top: 5px; }
-  .help-section code { background: #f3e5f5; color: #6a1b9a; padding: 2px 6px; border-radius: 3px; font-size: 0.9em; font-family: monospace; }
+.import-foot{
+  padding:12px 20px;
+  border-top:1px solid var(--border);
+  background:var(--bg2);
+  flex-shrink:0;
+}
+.import-foot-actions{
+  display:flex;gap:8px;justify-content:flex-end;
+}
 
-  /* ★ NUEVO: Estilos para modal de versiones interlineales */
-  .versions-select-list { max-height: 50vh; overflow-y: auto; border: 1px solid #ddd; border-radius: 6px; padding: 10px; }
-  .version-option { display: flex; align-items: center; gap: 10px; padding: 10px; border-bottom: 1px solid #f0f0f0; cursor: pointer; }
-  .version-option:last-child { border-bottom: none; }
-  .version-option:hover { background: #f9f9f9; }
-  .version-option input[type="checkbox"] { width: 20px; height: 20px; accent-color: #6a1b9a; cursor: pointer; }
-  .version-option label { flex: 1; cursor: pointer; font-size: 0.95em; }
+/* Summary colapsable */
+.import-summary{
+  border-top:1px solid var(--border);
+  background:var(--bg3);
+  flex-shrink:0;
+}
+.import-summary-toggle{
+  width:100%;
+  display:flex;align-items:center;gap:8px;
+  padding:12px 20px;
+  background:transparent;border:none;
+  color:var(--fg);
+  cursor:pointer;
+  font-family:inherit;font-size:12px;
+  text-align:left;
+  transition:background .15s;
+}
+.import-summary-toggle:hover{background:var(--bg4)}
+.import-summary-toggle .msi{
+  color:var(--primary);
+  transition:transform .2s;
+}
+.import-summary-toggle.open .msi{transform:rotate(180deg)}
+.import-summary-text{
+  color:var(--fg2);
+  flex:1;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.import-summary-details{
+  display:none;
+  max-height:300px;
+  overflow:auto;
+  padding:0 20px 20px;
+  background:var(--bg3);
+  border-top:1px solid var(--border);
+}
+.import-summary-details.on{display:block}
+.import-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+  gap:12px;
+  margin-top:14px;
+}
+.import-card{
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:14px;
+  position:relative;
+}
+.import-card-base{border-color:var(--primary)}
+.import-base-badge{
+  position:absolute;
+  top:-8px;left:12px;
+  background:var(--primary-d);color:#fff;
+  font-size:9px;padding:2px 8px;
+  border-radius:8px;letter-spacing:.5px;
+}
+.import-card-title{
+  font-size:13px;font-weight:500;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  margin-bottom:2px;
+}
+.import-card-size{
+  font-size:11px;color:var(--fg3);
+  margin-bottom:10px;
+}
+.import-stats-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(100px,1fr));
+  gap:6px;
+}
+.import-stat{
+  background:var(--bg4);
+  border-radius:8px;
+  padding:6px 8px;
+  display:flex;align-items:center;gap:6px;
+}
+.import-stat-icon{
+  font-size:14px;
+  color:var(--primary);
+  opacity:.85;
+  flex-shrink:0;
+}
+.import-stat-body{line-height:1.1;min-width:0}
+.import-stat-body b{font-size:13px;display:block}
+.import-stat-label{
+  font-size:9.5px;
+  color:var(--fg3);
+  text-transform:uppercase;
+  letter-spacing:.3px;
+}
+.import-card-empty{color:var(--fg3);font-size:11px}
+.import-empty{
+  text-align:center;
+  color:var(--fg3);
+  font-size:12px;
+  margin-top:20px;
+}
 
-  .ref-modal-verse { padding: 10px; border-bottom: 1px solid #eee; }
-  .ref-modal-verse .version-tag { display: inline-flex; align-items: center; gap: 4px; background: #6a1b9a; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.75em; margin-right: 8px; }
-  .ref-modal-verse .verse-text { font-size: 0.95em; line-height: 1.5; }
+/* =========================================================
+   MODAL BIBLIA
+   ========================================================= */
+.bib-modal{
+  position:fixed;inset:0;z-index:70;
+  display:none;
+}
+.bib-modal.on{display:block}
+.bib-bg{
+  position:absolute;inset:0;
+  background:rgba(0,0,0,.6);
+  backdrop-filter:blur(6px);
+  -webkit-backdrop-filter:blur(6px);
+}
+.bib-box{
+  position:relative;
+  background:var(--bg2);
+  width:min(440px,92vw);
+  margin:8vh auto;
+  border-radius:20px;
+  padding:20px;
+  border:1px solid var(--border);
+  max-height:84vh;
+  overflow:auto;
+}
+.bib-title{
+  display:flex;justify-content:space-between;
+  align-items:center;
+  font-size:15px;font-weight:500;
+  gap:8px;
+}
+.bib-title .msi{cursor:pointer;flex-shrink:0}
+.bib-fields{
+  display:grid;gap:10px;margin-top:14px;
+}
+.bib-fields select,.bib-fields input{
+  padding:10px 12px;border-radius:10px;
+  background:var(--bg4);
+  color:var(--fg);
+  border:1px solid var(--border);
+  font-family:inherit;
+  font-size:13px;
+  outline:none;
+}
+.bib-preview{
+  margin-top:12px;padding:12px;
+  background:var(--bg4);
+  border-radius:12px;
+  font-family:'Merriweather',serif;
+  font-size:13px;
+  line-height:1.6;
+  max-height:160px;
+  overflow:auto;
+}
+.bib-actions{
+  display:flex;gap:8px;margin-top:14px;
+}
+.bib-actions .btn{flex:1;justify-content:center}
 
-  .content-panel { background: white; border-radius: 8px; padding: 15px; margin-top: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-  .content-panel h3 { color: #6a1b9a; margin-bottom: 15px; font-size: 1.1em; border-bottom: 2px solid #6a1b9a; padding-bottom: 8px; display: flex; align-items: center; gap: 8px; }
-  .topic-level-0 { margin: 20px 0 15px 0; padding: 10px 15px; background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%); border-left: 4px solid #6a1b9a; border-radius: 6px; }
-  .topic-level-0 .topic-title { font-size: 1.1em; font-weight: 700; color: #4a148c; }
-  .topic-level-1 { margin: 15px 0 10px 15px; padding: 12px; background: #f5f5f5; border-left: 3px solid #1e88e5; border-radius: 6px; border: 2px dashed transparent; transition: all 0.3s; }
-  .topic-level-1.expanded { border: 2px dashed #1e88e5; background: #e3f2fd; }
-  .topic-level-1 .topic-title, .topic-level-2 .topic-title { font-weight: 600; margin-bottom: 8px; cursor: pointer; display: flex; align-items: center; gap: 6px; }
-  .topic-level-2 { margin: 10px 0 10px 25px; padding: 10px; background: #fafafa; border-left: 2px solid #43a047; border-radius: 4px; }
-  .topic-preview { font-size: 0.9em; color: #555; line-height: 1.6; margin-bottom: 8px; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
-  .topic-preview.expanded { -webkit-line-clamp: unset; }
-  .topic-verses { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-  .verse-link { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; background: #6a1b9a; color: white; border-radius: 4px; text-decoration: none; font-size: 0.85em; cursor: pointer; }
-  .toggle-btn { display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; background: #1e88e5; color: white; border: none; border-radius: 4px; font-size: 0.85em; cursor: pointer; margin-top: 8px; }
+/* =========================================================
+   TOAST
+   ========================================================= */
+.toast{
+  position:fixed;
+  bottom:24px;left:50%;
+  transform:translateX(-50%) translateY(100px);
+  background:var(--bg5);
+  padding:12px 20px;
+  border-radius:99px;
+  font-size:13px;
+  opacity:0;
+  transition:.35s;
+  z-index:99;
+  border:1px solid var(--border);
+  box-shadow:0 4px 16px rgba(0,0,0,.4);
+  max-width:90vw;
+  text-align:center;
+  pointer-events:none;
+}
+.toast.show{
+  transform:translateX(-50%) translateY(0);
+  opacity:1;
+}
 
-  .list-item { padding: 12px; border-bottom: 1px solid #f0f0f0; cursor: pointer; display: flex; align-items: center; }
-  .list-item:hover { background: #f9f9f9; }
-  .list-item-ref { font-weight: bold; color: #6a1b9a; font-size: 0.95em; flex: 1; display: flex; align-items: center; gap: 6px; }
-  .list-item-delete { color: #e94560; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 5px; border-radius: 50%; }
-  .list-item-delete:hover { background: #ffebee; }
-  .list-item-edit { color: #1e88e5; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 5px; border-radius: 50%; margin-right: 4px; }
-  .list-item-edit:hover { background: #e3f2fd; }
+/* =========================================================
+   LOADER
+   ========================================================= */
+.loader{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,.7);
+  backdrop-filter:blur(6px);
+  -webkit-backdrop-filter:blur(6px);
+  display:none;
+  place-items:center;
+  z-index:100;
+}
+.loader.on{display:grid}
+.loader-inner{text-align:center}
+.spin{
+  width:44px;height:44px;
+  border:3px solid rgba(255,255,255,.1);
+  border-top-color:var(--primary);
+  border-radius:50%;
+  animation:rot .8s linear infinite;
+  margin:0 auto;
+}
+@keyframes rot{to{transform:rotate(360deg)}}
+.load-msg{
+  margin-top:14px;
+  font-size:13px;
+  color:var(--fg2);
+}
 
-  .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 12px 24px; border-radius: 25px; z-index: 9999; font-size: 0.95em; font-weight: 500; box-shadow: 0 4px 12px rgba(0,0,0,0.3); animation: fadeInOut 2.5s forwards; pointer-events: none; display: flex; align-items: center; gap: 8px; }
-  @keyframes fadeInOut { 0% { opacity: 0; transform: translateX(-50%) translateY(20px); } 15% { opacity: 1; transform: translateX(-50%) translateY(0); } 85% { opacity: 1; } 100% { opacity: 0; } }
-  
-  .material-icons { font-size: 1.2em; vertical-align: middle; }
-  .btn-small-icon { font-size: 1.1em !important; }
-</style>
+/* =========================================================
+   MODAL AYUDA
+   ========================================================= */
+.help-modal{
+  position:fixed;inset:0;z-index:90;
+  display:none;
+}
+.help-modal.on{display:grid;place-items:center}
+.help-bg{
+  position:absolute;inset:0;
+  background:rgba(0,0,0,.7);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+}
+.help-box{
+  position:relative;
+  background:var(--bg2);
+  width:min(880px,96vw);
+  max-height:90vh;max-height:90dvh;
+  border-radius:20px;
+  border:1px solid var(--border);
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+.help-head{
+  padding:16px 20px;
+  border-bottom:1px solid var(--border);
+  display:flex;justify-content:space-between;align-items:center;
+  flex-shrink:0;
+}
+.help-head b{font-size:16px;display:flex;align-items:center;gap:8px}
+.help-head .vbadge{
+  font-size:11px;font-weight:600;
+  background:var(--primary-d);color:#fff;
+  padding:3px 9px;border-radius:10px;
+  font-family:'Roboto Mono',monospace;
+}
+.help-body{
+  overflow:auto;
+  padding:20px;
+  line-height:1.7;
+  flex:1;
+}
+.help-body h3{
+  font-size:14px;
+  margin:18px 0 8px;
+  color:var(--primary);
+  text-transform:uppercase;
+  letter-spacing:.5px;
+  display:flex;align-items:center;gap:6px;
+}
+.help-body h3:first-child{margin-top:0}
+.help-body p,.help-body li{
+  font-size:13px;color:var(--fg2);margin-bottom:6px;
+}
+.help-body ul{padding-left:20px;margin:6px 0}
+.help-body code{
+  background:var(--bg4);
+  padding:2px 6px;border-radius:4px;
+  font-family:'Roboto Mono',monospace;
+  font-size:12px;color:var(--primary);
+}
+.help-badge-test{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--warn);color:#000;
+  padding:6px 14px;border-radius:99px;
+  font-size:12px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.5px;
+  margin-bottom:14px;
+}
+.help-danger{
+  background:rgba(207,102,121,.12);
+  border:1px solid rgba(207,102,121,.3);
+  border-left:3px solid var(--accent);
+  border-radius:12px;
+  padding:14px;margin-bottom:12px;
+  font-size:12px;color:#f5b1bd;
+  line-height:1.6;
+}
+.help-danger b{display:block;margin-bottom:6px}
+.help-ok{
+  background:rgba(74,222,128,.1);
+  border:1px solid rgba(74,222,128,.25);
+  border-left:3px solid var(--ok);
+  border-radius:12px;
+  padding:14px;margin-bottom:12px;
+  font-size:12px;color:var(--ok);
+  line-height:1.6;
+}
+.help-ok b{display:block;margin-bottom:6px}
+.help-section{
+  background:var(--bg3);
+  border-radius:14px;
+  padding:16px;margin-bottom:14px;
+  border:1px solid var(--border);
+}
+.help-example{
+  background:var(--bg4);
+  padding:10px 14px;border-radius:8px;
+  margin:8px 0;
+  font-family:'Roboto Mono',monospace;
+  font-size:11px;
+  white-space:pre-wrap;
+  word-break:break-word;
+  line-height:1.6;
+  color:var(--fg2);
+}
+.help-link{
+  display:inline-flex;align-items:center;gap:8px;
+  margin-top:12px;
+  padding:10px 18px;
+  background:var(--primary-d);
+  color:#fff;text-decoration:none;
+  border-radius:20px;
+  font-size:13px;font-weight:500;
+  transition:background .15s;
+}
+.help-link:hover{background:#7968c0}
+.help-table{
+  width:100%;border-collapse:collapse;
+  font-size:12px;margin-top:12px;
+}
+.help-table th{
+  position:sticky;top:0;
+  background:var(--bg3);
+  padding:10px 12px;
+  text-align:left;
+  font-size:11px;
+  text-transform:uppercase;
+  color:var(--fg3);
+  border-bottom:1px solid var(--border);
+  z-index:1;
+}
+.help-table td{
+  padding:8px 12px;
+  border-bottom:1px solid var(--border);
+  vertical-align:top;
+  color:var(--fg2);
+}
+.help-table td.bk{
+  font-weight:600;color:var(--fg);
+  white-space:nowrap;width:38%;
+}
+.help-table td.ab{
+  font-family:'Roboto Mono',monospace;
+  font-size:11px;
+}
+
+/* =========================================================
+   MERGE MODAL (fusionar notas)
+   ========================================================= */
+.merge-modal{
+  position:fixed;inset:0;z-index:80;
+  background:rgba(0,0,0,.6);
+  display:grid;place-items:center;
+  padding:20px;
+}
+.merge-box{
+  background:var(--bg2);
+  width:min(420px,96vw);
+  border-radius:20px;
+  padding:20px;
+  border:1px solid var(--border);
+}
+.merge-box h3{font-size:16px;margin-bottom:12px}
+.merge-fields{margin-top:10px}
+.merge-fields input{
+  width:100%;padding:12px;
+  border-radius:12px;
+  background:var(--bg4);
+  color:var(--fg);
+  border:1px solid var(--border);
+  font-family:inherit;
+  font-size:14px;
+  outline:none;
+}
+.merge-preview{
+  width:100%;
+  min-height:120px;
+  margin-top:10px;
+  padding:12px;
+  border-radius:12px;
+  background:var(--bg4);
+  color:var(--fg);
+  border:1px solid var(--border);
+  font-size:12px;
+  resize:vertical;
+  font-family:inherit;
+}
+.merge-actions{
+  display:flex;gap:8px;margin-top:14px;
+}
+.merge-actions .btn{flex:1;justify-content:center}
+
+/* =========================================================
+   RESPONSIVE (TABLET)
+   ========================================================= */
+@media(min-width:768px){
+  .sidebar{
+    width:420px;
+    flex:0 0 420px;
+  }
+  .logo-text{font-size:16px}
+  .logo-sub{font-size:11px;max-width:320px}
+  .logo-badge{width:36px;height:36px}
+}
+
+/* =========================================================
+   RESPONSIVE (MÓVIL)
+   ========================================================= */
+@media(max-width:600px){
+  :root{--header-h:56px}
+
+  header{padding:0 10px}
+  .logo-badge{width:32px;height:32px;border-radius:8px}
+  .logo-text{font-size:13px}
+  .version-badge{font-size:8px;padding:1px 5px}
+  .logo-sub{font-size:10px;max-width:130px}
+  .hdr-actions .btn span:not(.msi){display:none}
+  .hdr-actions .btn{padding:8px 10px}
+  .hdr-actions .btn.icon{width:36px;height:36px}
+
+  .main-tab{padding:6px 12px 4px 12px;font-size:12px}
+  .cnt{font-size:10px}
+
+  .sb-top{padding:10px}
+  .search-bar{padding:0 12px}
+  .search-bar input{padding:9px 0;font-size:13px}
+  .btn-new-note{width:40px;height:40px}
+
+  .ni{padding:10px 12px 10px 50px}
+  .dot{left:30px;top:15px}
+  .ni-title{font-size:13px}
+  .ni-prev{font-size:11px;-webkit-line-clamp:2}
+
+  .batch-bar{padding:6px;gap:4px}
+  .batch-btn{font-size:11px;padding:8px 6px;gap:4px}
+  .batch-btn .msi{font-size:14px}
+  .batch-count-group{padding:0 4px}
+
+  .sheet-head{padding:8px 16px 10px}
+  .sheet-body{padding:14px 16px 10px}
+  .sheet-foot{padding:12px 16px 20px;padding-bottom:calc(16px + env(safe-area-inset-bottom))}
+  .sheet-foot .btn{flex:1;justify-content:center;font-size:12px}
+
+  .fg textarea{min-height:180px}
+
+  .import-box{width:100vw;max-height:96dvh;border-radius:0}
+  .import-head{padding:14px 16px}
+  .import-body{padding:14px 16px}
+  .import-foot{padding:10px 16px}
+  .import-foot-actions{flex-direction:column}
+  .import-foot-actions .btn{
+    width:100%;justify-content:center;
+  }
+  .import-summary-toggle{padding:12px 16px;font-size:11px}
+  .import-summary-details{padding:0 16px 16px}
+  .import-grid{grid-template-columns:1fr;gap:10px}
+  .import-card{padding:12px}
+
+  .bib-box{width:100vw;margin:0;border-radius:0;max-height:100dvh;height:100dvh}
+  .bib-box h3{font-size:14px}
+  .bib-actions{flex-direction:column-reverse}
+  .bib-actions .btn{width:100%}
+
+  .help-box{width:100vw;max-height:100dvh;height:100dvh;border-radius:0}
+  .help-head{padding:14px 16px;font-size:14px}
+  .help-head b{font-size:14px}
+  .help-body{padding:16px}
+
+  .merge-box{width:100vw;border-radius:0;padding:16px}
+  .merge-actions{flex-direction:column-reverse}
+  .merge-actions .btn{width:100%}
+
+  .toast{bottom:16px;font-size:12px;padding:10px 16px;left:12px;right:12px;transform:translateY(100px)}
+  .toast.show{transform:translateY(0)}
+}
+
+/* =========================================================
+   RESPONSIVE — Móvil y tablet (sidebar ocupa todo el ancho)
+   ========================================================= */
+@media(max-width:1023px){
+  .sidebar{
+    width:100%;
+    flex:1 1 auto;
+  }
+}
+
+/* =========================================================
+   RESPONSIVE — Desktop (sidebar con ancho fijo)
+   ========================================================= */
+@media(min-width:1024px){
+  .sidebar{
+    width:420px;
+    flex:0 0 420px;
+    border-right:1px solid var(--border);
+  }
+  .logo-text{font-size:16px}
+  .logo-sub{font-size:11px;max-width:320px}
+}
+
+/* =========================================================
+   RESPONSIVE — Móvil pequeño (≤600px)
+   ========================================================= */
+@media(max-width:600px){
+  :root{--header-h:56px}
+
+  header{padding:0 10px}
+  .logo-badge{width:32px;height:32px;border-radius:8px}
+  .logo-text{font-size:13px}
+  .version-badge{font-size:8px;padding:1px 5px}
+  .logo-sub{font-size:10px;max-width:130px}
+  .hdr-actions .btn span:not(.msi){display:none}
+  .hdr-actions .btn{padding:8px 10px}
+  .hdr-actions .btn.icon{width:36px;height:36px}
+
+  .main-tab{padding:6px 12px 4px 12px;font-size:12px}
+  .cnt{font-size:10px}
+
+  .sb-top{padding:10px}
+  .search-bar{padding:0 12px}
+  .search-bar input{padding:9px 0;font-size:13px}
+  .btn-new-note{width:40px;height:40px}
+
+  .ni{padding:10px 12px 10px 50px}
+  .dot{left:30px;top:15px}
+  .ni-title{font-size:13px}
+  .ni-prev{font-size:11px;-webkit-line-clamp:2}
+
+  .batch-bar{padding:6px;gap:4px}
+  .batch-btn{font-size:11px;padding:8px 6px;gap:4px}
+  .batch-btn .msi{font-size:14px}
+  .batch-count-group{padding:0 4px}
+
+  .sheet-head{padding:8px 16px 10px}
+  .sheet-body{padding:14px 16px 10px}
+  .sheet-foot{padding:12px 16px 20px;padding-bottom:calc(16px + env(safe-area-inset-bottom))}
+  .sheet-foot .btn{flex:1;justify-content:center;font-size:12px}
+
+  .fg textarea{min-height:180px}
+
+  .import-box{width:100vw;max-height:96dvh;border-radius:0}
+  .import-head{padding:14px 16px}
+  .import-body{padding:14px 16px}
+  .import-foot{padding:10px 16px}
+  .import-foot-actions{flex-direction:column}
+  .import-foot-actions .btn{
+    width:100%;justify-content:center;
+  }
+  .import-summary-toggle{padding:12px 16px;font-size:11px}
+  .import-summary-details{padding:0 16px 16px}
+  .import-grid{grid-template-columns:1fr;gap:10px}
+  .import-card{padding:12px}
+
+  .bib-box{width:100vw;margin:0;border-radius:0;max-height:100dvh;height:100dvh}
+  .bib-box h3{font-size:14px}
+  .bib-actions{flex-direction:column-reverse}
+  .bib-actions .btn{width:100%}
+
+  .help-box{width:100vw;max-height:100dvh;height:100dvh;border-radius:0}
+  .help-head{padding:14px 16px}
+  .help-head b{font-size:14px}
+  .help-body{padding:16px}
+
+  .merge-box{width:100vw;border-radius:0;padding:16px}
+  .merge-actions{flex-direction:column-reverse}
+  .merge-actions .btn{width:100%}
+
+  .toast{
+    bottom:16px;font-size:12px;padding:10px 16px;
+    left:12px;right:12px;
+    transform:translateY(100px);
+  }
+  .toast.show{transform:translateY(0)}
+}
+
+/* =========================================================
+   RESPONSIVE — Móvil muy pequeño (≤380px)
+   ========================================================= */
+@media(max-width:380px){
+  .logo-sub{display:none}
+  .logo-text{font-size:12px}
+  .search-bar input{font-size:12px}
+  .batch-btn span:not(.msi){display:none}
+  .batch-btn{padding:10px}
+  .batch-btn .msi{font-size:18px}
+}
+    </style>
 </head>
 <body>
 
 <header>
-  <h1><span class="material-icons">menu_book</span> Biblia Multi-Traducción</h1>
-  <div class="selectors">
-    <select id="version"></select>
-    <select id="book"></select>
-    <select id="chapter"></select>
+  <div class="logo">
+    <div class="logo-badge">
+      <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 512 512" role="img">
+        <rect width="512" height="512" rx="110" fill="#4a6da7"/>
+        <text x="50%" y="46%" dominant-baseline="middle" text-anchor="middle"
+              font-family="Roboto, Arial, sans-serif" font-weight="800" font-size="115"
+              fill="white" letter-spacing="-2">JW-NL</text>
+        <g transform="translate(256, 395)" stroke="white" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" fill="none">
+          <line x1="0" y1="-50" x2="0" y2="10"/>
+          <polyline points="-22,-28 0,-50 22,-28"/>
+          <line x1="0" y1="10" x2="-42" y2="68"/>
+          <line x1="0" y1="10" x2="42" y2="68"/>
+        </g>
+      </svg>
+    </div>
+    <div>
+      <div class="logo-text">JW-Notelink <span class="version-badge">v2.0.2</span></div>
+      <div class="logo-sub" id="fileInfo">notas + InputField + mezcla</div>
+    </div>
   </div>
-  <!-- ★ NUEVO: Botón interlineal (oculto por defecto) -->
-  <button id="interlinearBtn" class="interlinear-btn" onclick="openInterlinearVersionsModal()" style="display:none;">
-    <span class="material-icons btn-small-icon">layers</span>
-    <span id="interlinearBtnLabel">Seleccionar traducciones</span>
-  </button>
-  <div class="search-box">
-    <input type="text" id="searchInput" placeholder="Buscar en todas las versiones...">
-    <button onclick="performSearch()"><span class="material-icons btn-small-icon">search</span></button>
+  <div class="hdr-actions">
+    <button class="btn icon" id="helpBtn"><span class="msi">help</span></button>
+    <button class="btn" id="openImportBtn"><span class="msi sm">folder_open</span>Abrir</button>
+    <button id="expBtn" class="btn primary" disabled><span class="msi sm">download</span>Exportar</button>
   </div>
 </header>
 
-<div class="nav-buttons">
-  <button class="nav-btn" id="prevBtn" onclick="prevChapter()"><span class="material-icons btn-small-icon">chevron_left</span> Ant</button>
-  <button class="nav-btn" onclick="toggleModal('bookmarksModal')"><span class="material-icons btn-small-icon">bookmark</span></button>
-  <button class="nav-btn" onclick="toggleModal('notesListModal')"><span class="material-icons btn-small-icon">sticky_note_2</span></button>
-  <button class="nav-btn" id="contentBtn" onclick="toggleContentPanel()"><span class="material-icons btn-small-icon">list</span></button>
-  <button class="nav-btn" id="nextBtn" onclick="nextChapter()">Sig <span class="material-icons btn-small-icon">chevron_right</span></button>
-  <button class="nav-btn settings" onclick="toggleModal('settingsModal')"><span class="material-icons btn-small-icon">settings</span></button>
+<div class="main-tabs" id="mainTabs">
+  <div class="main-tab active" id="tabNotes"><span class="msi sm">description</span>Notas <span class="cnt" id="cntNotes">0</span></div>
+  <div class="main-tab" id="tabInputs"><span class="msi sm">input</span>InputField <span class="cnt" id="cntInputs">0</span></div>
 </div>
 
-<div id="content"><div class="loading"><div class="spinner"></div>Cargando...</div></div>
-
-<div id="colorToolbar" class="color-toolbar">
-  <div class="color-btn orange" onclick="applyColor('hl-orange')" title="Resaltar naranja"><span class="material-icons btn-small-icon">format_color_fill</span></div>
-  <div class="color-btn yellow" onclick="applyColor('hl-yellow')" title="Resaltar amarillo"><span class="material-icons btn-small-icon">format_color_fill</span></div>
-  <div class="color-btn green" onclick="applyColor('hl-green')" title="Resaltar verde"><span class="material-icons btn-small-icon">format_color_fill</span></div>
-  <div class="color-btn blue" onclick="applyColor('hl-blue')" title="Resaltar azul"><span class="material-icons btn-small-icon">format_color_fill</span></div>
-  <div class="color-btn purple" onclick="applyColor('hl-purple')" title="Resaltar morado"><span class="material-icons btn-small-icon">format_color_fill</span></div>
-  <div class="color-btn delete" onclick="applyColor('')" title="Quitar resaltado"><span class="material-icons btn-small-icon">delete</span></div>
-  <div class="color-btn note" onclick="openNoteEditorForCurrent()" title="Agregar/Editar nota"><span class="material-icons btn-small-icon">edit_note</span></div>
-  <div class="color-btn copy" onclick="copyVerseText()" title="Copiar versículo"><span class="material-icons btn-small-icon">content_copy</span></div>
-</div>
-
-<div id="noteEditorModal" class="modal note-editor-modal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h2 id="noteEditorTitle">Editar Nota</h2>
-      <button class="close-modal" onclick="closeModal('noteEditorModal')"><span class="material-icons">close</span></button>
-    </div>
-    <input type="text" id="noteTitle" class="title-input" placeholder="Título de la nota...">
-    <textarea id="noteContent" placeholder="Escribe tu nota aquí...&#10;&#10;Sintaxis:&#10;(Texto$https://url.com)&#10;(+Génesis 1:1)&#10;(+Génesis 1:1@nwtsty)&#10;[https://url.com/imagen.jpg#100x=]"></textarea>
-    <input type="text" id="noteTags" class="tags-input" placeholder="Etiquetas (separadas por comas)..." list="tagsList">
-    <datalist id="tagsList">
-      <option value="estudio">
-      <option value="predicación">
-      <option value="familia">
-    </datalist>
-    <div class="editor-actions">
-      <button class="btn-cancel" onclick="closeModal('noteEditorModal')"><span class="material-icons btn-small-icon">cancel</span> Cancelar</button>
-      <button class="btn-delete-note" id="btnDeleteNote" onclick="deleteCurrentNote()" style="display:none;"><span class="material-icons btn-small-icon">delete</span> Eliminar</button>
-      <button class="btn-save" onclick="saveCurrentNote()"><span class="material-icons btn-small-icon">save</span> Guardar</button>
-    </div>
-  </div>
-</div>
-
-<div id="noteViewModal" class="modal note-view-modal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h2><span class="material-icons" style="margin-right:8px;">visibility</span> Vista de Nota</h2>
-      <button class="close-modal" onclick="closeModal('noteViewModal')"><span class="material-icons">close</span></button>
-    </div>
-    <div id="noteViewBody" class="note-view-body"></div>
-    <div class="note-view-actions">
-      <button class="btn-cancel" onclick="closeModal('noteViewModal')"><span class="material-icons btn-small-icon">close</span> Cerrar</button>
-      <button class="btn-save" id="btnEditFromView" onclick="editNoteFromView()"><span class="material-icons btn-small-icon">edit</span> Editar</button>
-    </div>
-  </div>
-</div>
-
-<div id="notesListModal" class="modal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h2><span class="material-icons" style="margin-right:8px;">sticky_note_2</span> Mis Notas</h2>
-      <button class="close-modal" onclick="closeModal('notesListModal')"><span class="material-icons">close</span></button>
-    </div>
-    <div id="notesListBody"></div>
-  </div>
-</div>
-
-<div id="bookmarksModal" class="modal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h2><span class="material-icons" style="margin-right:8px;">bookmark</span> Mis Marcadores</h2>
-      <button class="close-modal" onclick="closeModal('bookmarksModal')"><span class="material-icons">close</span></button>
-    </div>
-    <div id="bookmarksListBody"></div>
-  </div>
-</div>
-
-<div id="verseRefModal" class="modal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h2 id="verseRefTitle">Referencia</h2>
-      <button class="close-modal" onclick="closeModal('verseRefModal')"><span class="material-icons">close</span></button>
-    </div>
-    <div id="verseRefBody"></div>
-  </div>
-</div>
-
-<!-- ★ NUEVO: Modal de Ayuda -->
-<div id="helpModal" class="modal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h2><span class="material-icons" style="margin-right:8px;">help_outline</span> Ayuda y Funciones</h2>
-      <button class="close-modal" onclick="closeModal('helpModal')"><span class="material-icons">close</span></button>
-    </div>
-    
-    <div class="help-section">
-      <h4><span class="material-icons btn-small-icon">menu_book</span> Navegación</h4>
-      <p>Usa los selectores del encabezado para elegir la <strong>traducción</strong>, <strong>libro</strong> y <strong>capítulo</strong>. Los botones <strong>◀ Ant</strong> y <strong>Sig ▶</strong> te permiten avanzar o retroceder entre capítulos, pasando automáticamente al siguiente o anterior libro cuando corresponde.</p>
-    </div>
-
-    <div class="help-section">
-      <h4><span class="material-icons btn-small-icon">touch_app</span> Opciones de versículo</h4>
-      <p>Al tocar un versículo aparece un <strong>toolbar flotante</strong> con estas opciones:</p>
-      <ul>
-        <li><strong>Colores</strong> (🟠🟡🟢🔵🟣): Resalta el versículo con un color para marcarlo visualmente.</li>
-        <li><strong>🗑️ Quitar</strong>: Elimina el resaltado del versículo.</li>
-        <li><strong>📄 Nota</strong>: Abre el editor para crear o editar una nota asociada al versículo.</li>
-        <li><strong>📋 Copiar</strong>: Copia al portapapeles el texto del versículo con su referencia.</li>
-      </ul>
-    </div>
-
-    <div class="help-section">
-      <h4><span class="material-icons btn-small-icon">sticky_note_2</span> Notas</h4>
-      <p>Las notas permiten añadir comentarios personales a cualquier versículo. Soportan <strong>sintaxis especial</strong>:</p>
-      <ul>
-        <li><code>(Texto$https://url.com)</code> → Crea un enlace externo.</li>
-        <li><code>(+Génesis 1:1)</code> → Inserta una referencia bíblica que se puede tocar para ver el versículo en todas las versiones.</li>
-        <li><code>(+Génesis 1:1@nwtsty)</code> → Referencia bíblica en una versión específica.</li>
-        <li><code>[https://url/imagen.jpg#200x=]</code> → Inserta una imagen (usa <code>=</code> para tamaño automático).</li>
-      </ul>
-      <p style="margin-top:8px;">Puedes añadir <strong>etiquetas</strong> (separadas por comas) para organizar tus notas. Al tocar el icono 📄 junto al número del versículo, se abre una <strong>vista previa renderizada</strong> de la nota.</p>
-    </div>
-
-    <div class="help-section">
-      <h4><span class="material-icons btn-small-icon">bookmark</span> Marcadores</h4>
-      <p>Todos los versículos resaltados con color aparecen automáticamente en la lista de <strong>Marcadores</strong>. Desde allí puedes navegar al versículo o eliminar el resaltado.</p>
-    </div>
-
-    <div class="help-section">
-      <h4><span class="material-icons btn-small-icon">search</span> Búsqueda</h4>
-      <p>Escribe al menos 3 letras en el buscador para encontrar coincidencias en <strong>todas las versiones y todos los libros</strong>. Los resultados se muestran resaltados y al tocar uno te lleva directamente al versículo.</p>
-    </div>
-
-    <div class="help-section">
-      <h4><span class="material-icons btn-small-icon">list</span> Contenido del capítulo</h4>
-      <p>El botón <strong>📑</strong> muestra/oculta un panel con los temas y subtemas del capítulo actual (si están disponibles). Puedes expandir cada tema para ver más detalles y tocar los enlaces de versículos para navegar a ellos.</p>
-    </div>
-
-    <div class="help-section">
-      <h4><span class="material-icons btn-small-icon">layers</span> Modo Interlineal</h4>
-      <p>En <strong>Configuración</strong> puedes cambiar entre dos modos de lectura:</p>
-      <ul>
-        <li><strong>Una traducción</strong>: Muestra solo la versión seleccionada en el selector.</li>
-        <li><strong>Interlineal</strong>: Muestra cada versículo con <strong>varias traducciones apiladas</strong>, una debajo de otra, cada una con su etiqueta de versión. Ideal para estudio comparativo.</li>
-      </ul>
-    </div>
-
-    <div class="help-section">
-      <h4><span class="material-icons btn-small-icon">sync_alt</span> Respaldo de datos</h4>
-      <p>Usa <strong>Exportar</strong> para descargar un archivo <code>.mbe</code> con todas tus notas, marcadores y configuración. Usa <strong>Importar</strong> para restaurar esos datos en este u otro dispositivo.</p>
-    </div>
-  </div>
-</div>
-
-<!-- ★ NUEVO: Modal de selección de versiones interlineales -->
-<div id="interlinearVersionsModal" class="modal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h2><span class="material-icons" style="margin-right:8px;">layers</span> Traducciones Interlineales</h2>
-      <button class="close-modal" onclick="closeModal('interlinearVersionsModal')"><span class="material-icons">close</span></button>
-    </div>
-    <p style="color:#666; font-size:0.9em; margin-bottom:12px;">Selecciona una o más traducciones para ver cada versículo con todas ellas apiladas:</p>
-    <div id="versionsSelectList" class="versions-select-list"></div>
-    <div style="display:flex; gap:10px; margin-top:15px;">
-      <button class="btn-cancel" onclick="closeModal('interlinearVersionsModal')" style="flex:1; padding:12px; border:none; border-radius:6px; font-weight:bold; cursor:pointer;">Cancelar</button>
-      <button class="btn-save" onclick="saveInterlinearVersions()" style="flex:1; padding:12px; border:none; border-radius:6px; font-weight:bold; cursor:pointer;">Aplicar</button>
-    </div>
-  </div>
-</div>
-
-<div id="settingsModal" class="modal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h2><span class="material-icons" style="margin-right:8px;">settings</span> Configuración</h2>
-      <button class="close-modal" onclick="closeModal('settingsModal')"><span class="material-icons">close</span></button>
-    </div>
-    
-    <div class="settings-group">
-      <h3><span class="material-icons btn-small-icon">format_size</span> Tamaño de texto</h3>
-      <input type="range" id="textSizeRange" min="8" max="30" step="1" value="14" oninput="updateTextSize(this.value)">
-      <p style="text-align:center; margin-top:5px; color:#666;" id="textSizeLabel">14 pt</p>
-    </div>
-
-    <div class="settings-group">
-      <h3><span class="material-icons btn-small-icon">layers</span> Modo de lectura</h3>
-      <p style="font-size:0.85em; color:#666; margin-bottom:8px;">Elige cómo quieres ver las traducciones:</p>
-      <div class="mode-switch">
-        <button id="modeSingleBtn" onclick="setReadingMode('single')">
-          <span class="material-icons btn-small-icon">article</span> Una traducción
+<div class="app">
+  <aside class="sidebar">
+    <div class="sb-top">
+      <div class="sb-search-row">
+        <div class="search-bar">
+          <span class="msi sm">search</span>
+          <input id="searchIn" placeholder="Buscar...">
+        </div>
+        <button class="btn primary btn-new-note" id="newNoteBtn" title="Nueva nota">
+          <span class="msi">add</span>
         </button>
-        <button id="modeInterlinearBtn" onclick="setReadingMode('interlinear')">
-          <span class="material-icons btn-small-icon">layers</span> Interlineal
-        </button>
+      </div>
+      <select id="tagFilter" class="tag-filter"><option value="">🏷️ Todas las etiquetas</option></select>
+      <div class="sb-count">
+        <span id="nCount">0 elementos</span>
+        <span id="selCount"></span>
+        <button id="deselectBtn" class="btn-deselect">Deseleccionar</button>
       </div>
     </div>
 
-    <div class="settings-group">
-      <h3><span class="material-icons btn-small-icon">help_outline</span> Ayuda</h3>
-      <button onclick="closeModal('settingsModal'); setTimeout(()=>toggleModal('helpModal'), 200);" style="background:#1e88e5;">
-        <span class="material-icons btn-small-icon">help</span> Ver ayuda y funciones
-      </button>
+    <div id="nList" class="list">
+      <div class="empty">
+        <span class="msi">description</span>
+        Abre tu archivo .jwlibrary
+        <div id="dropZ" class="drop">
+          <span class="msi">upload_file</span>
+          Arrastra tu .jwlibrary aquí
+        </div>
+      </div>
     </div>
 
-    <div class="settings-group">
-      <h3><span class="material-icons btn-small-icon">sync_alt</span> Datos (Exportar / Importar)</h3>
-      <button onclick="exportData()"><span class="material-icons btn-small-icon">file_download</span> Exportar datos (.mbe)</button>
-      <button onclick="document.getElementById('importFile').click()" style="background:#1e88e5; margin-top:10px;"><span class="material-icons btn-small-icon">file_upload</span> Importar datos (.mbe)</button>
-      <input type="file" id="importFile" accept=".mbe" style="display:none" onchange="importData(this)">
+    <div id="batchTools" class="batch-bar">
+      <div class="batch-count-group">
+        <span class="msi sm">check_circle</span>
+        <b id="batchCount">0</b>
+      </div>
+      <button class="btn batch-btn batch-btn-danger" id="batchDelBtn"><span class="msi sm">delete</span>Eliminar</button>
+      <button class="btn batch-btn" id="batchCopyBtn"><span class="msi sm">content_copy</span>Copiar</button>
+      <button class="btn primary batch-btn" id="batchMergeBtn"><span class="msi sm">merge_type</span>Fusionar</button>
+      <button class="btn batch-btn" id="batchDeselectBtn"><span class="msi sm">deselect</span>Quitar</button>
+    </div>
+  </aside>
+</div>
+
+<div id="overlay" class="overlay"></div>
+<div id="sheet" class="sheet">
+  <div class="handle"></div>
+  <div class="sheet-head">
+    <b id="sheetTitle">Editar</b>
+    <button class="btn icon" id="closeSheetBtn"><span class="msi sm">close</span></button>
+  </div>
+  <div class="sheet-body" id="sheetBody"></div>
+  <div class="sheet-foot" id="sheetFoot"></div>
+</div>
+
+<div id="importModal" class="import-modal">
+  <div class="import-bg" id="importBg"></div>
+  <div class="import-box">
+    <div class="import-head">
+      <h2><span class="msi">library_add</span> Importar y Mezclar</h2>
+      <button class="btn icon" id="closeImportBtn"><span class="msi">close</span></button>
+    </div>
+    <div class="import-body">
+      <div class="import-drop" id="importDrop">
+        <input type="file" id="importFileIn" accept=".jwlibrary" multiple hidden>
+        <span class="msi xl">upload_file</span>
+        <div class="import-drop-title"><b>Haz clic</b> o arrastra tus .jwlibrary aquí</div>
+        <div class="import-drop-hint">El primero será la base para exportar • Se mezclan Notas + InputField</div>
+      </div>
+    </div>
+    <div class="import-foot">
+      <div class="import-foot-actions">
+        <button class="btn" id="clearCacheBtn"><span class="msi sm">delete_sweep</span>Limpiar caché</button>
+        <button class="btn" id="cancelImportBtn">Cancelar</button>
+        <button class="btn primary" id="acceptMixBtn" disabled><span class="msi sm">merge_type</span>Mezclar</button>
+      </div>
+    </div>
+    <div class="import-summary" id="importSummaryBox">
+      <button class="import-summary-toggle" id="summaryToggle">
+        <span class="msi sm" id="summaryToggleIcon">expand_more</span>
+        <span class="import-summary-text" id="importSummary">0 archivos cargados</span>
+      </button>
+      <div class="import-summary-details" id="importSummaryDetails">
+        <div id="importGrid" class="import-grid"></div>
+        <div id="importEmpty" class="import-empty">Sin archivos aún</div>
+      </div>
     </div>
   </div>
 </div>
 
-<script>
-const VERSIONES = {
-  "Rvr60": "Reina Valera 1960", "dhh": "Dios Habla Hoy", "lbla": "LBLA",
-  "nbla": "Nueva Biblia Latinoamericana", "ntv": "Nueva Traducción Viviente",
-  "nvi": "Nueva Versión Internacional", "nwtsty": "TNM Edición de Estudio",
-  "rva2015": "Reina Valera Actualizada", "rvc": "Reina Valera Contemporánea", "tla": "TLA"
-};
+<div id="bibModal" class="bib-modal">
+  <div class="bib-bg" id="bibBg"></div>
+  <div class="bib-box">
+    <h3 class="bib-title">
+      📖 Insertar texto bíblico
+      <span class="msi" id="closeBibBtn">close</span>
+    </h3>
+    <div class="bib-fields">
+      <select id="t_ver"></select>
+      <select id="t_lib"></select>
+      <select id="t_cap"></select>
+      <input id="t_vers" placeholder="Vers: 1 o 1,5 o 1-5">
+      <select id="t_pos">
+        <option value="antes">Antes: Génesis 1:1 "texto"</option>
+        <option value="despues" selected>Después: "texto" (Gén 1:1)</option>
+        <option value="ninguna">Solo texto</option>
+      </select>
+    </div>
+    <div id="t_prev" class="bib-preview">Vista previa...</div>
+    <div class="bib-actions">
+      <button class="btn" id="cancelBibBtn">Cancelar</button>
+      <button class="btn primary" id="insertBibBtn">Insertar en cursor</button>
+    </div>
+  </div>
+</div>
 
-const LIBROS = [
-  {id:"01gn", name:"Génesis", caps:50}, {id:"02ex", name:"Éxodo", caps:40},
-  {id:"03lv", name:"Levítico", caps:27}, {id:"04nm", name:"Números", caps:36},
-  {id:"05dt", name:"Deuteronomio", caps:34}, {id:"06js", name:"Josué", caps:24},
-  {id:"07jud", name:"Jueces", caps:21}, {id:"08rt", name:"Rut", caps:4},
-  {id:"091sm", name:"1 Samuel", caps:31}, {id:"102sm", name:"2 Samuel", caps:24},
-  {id:"111kgs", name:"1 Reyes", caps:22}, {id:"122kgs", name:"2 Reyes", caps:25},
-  {id:"131ch", name:"1 Crónicas", caps:29}, {id:"142ch", name:"2 Crónicas", caps:36},
-  {id:"15ezr", name:"Esdras", caps:10}, {id:"16ne", name:"Nehemías", caps:13},
-  {id:"17et", name:"Ester", caps:10}, {id:"18job", name:"Job", caps:42},
-  {id:"19ps", name:"Salmos", caps:150}, {id:"20prv", name:"Proverbios", caps:31},
-  {id:"21ec", name:"Eclesiastés", caps:12}, {id:"22so", name:"Cantares", caps:8},
-  {id:"23is", name:"Isaías", caps:66}, {id:"24jr", name:"Jeremías", caps:52},
-  {id:"25lm", name:"Lamentaciones", caps:5}, {id:"26ez", name:"Ezequiel", caps:48},
-  {id:"27dn", name:"Daniel", caps:12}, {id:"28ho", name:"Oseas", caps:14},
-  {id:"29jl", name:"Joel", caps:3}, {id:"30am", name:"Amós", caps:9},
-  {id:"31ob", name:"Abdías", caps:1}, {id:"32jn", name:"Jonás", caps:4},
-  {id:"33mi", name:"Miqueas", caps:7}, {id:"34na", name:"Nahúm", caps:3},
-  {id:"35hk", name:"Habacuc", caps:3}, {id:"36zp", name:"Sofonías", caps:3},
-  {id:"37hg", name:"Ageo", caps:2}, {id:"38zc", name:"Zacarías", caps:14},
-  {id:"39ml", name:"Malaquías", caps:4}, {id:"40mt", name:"Mateo", caps:28},
-  {id:"41mk", name:"Marcos", caps:16}, {id:"42lk", name:"Lucas", caps:24},
-  {id:"43jo", name:"Juan", caps:21}, {id:"44act", name:"Hechos", caps:28},
-  {id:"45rm", name:"Romanos", caps:16}, {id:"461co", name:"1 Corintios", caps:16},
-  {id:"472co", name:"2 Corintios", caps:13}, {id:"48gl", name:"Gálatas", caps:6},
-  {id:"49eph", name:"Efesios", caps:6}, {id:"50ph", name:"Filipenses", caps:4},
-  {id:"51cl", name:"Colosenses", caps:4}, {id:"521ts", name:"1 Tesalonicenses", caps:5},
-  {id:"532ts", name:"2 Tesalonicenses", caps:3}, {id:"541tm", name:"1 Timoteo", caps:6},
-  {id:"552tm", name:"2 Timoteo", caps:4}, {id:"56tt", name:"Tito", caps:3},
-  {id:"57phm", name:"Filemón", caps:1}, {id:"58hb", name:"Hebreos", caps:13},
-  {id:"59jm", name:"Santiago", caps:5}, {id:"601pe", name:"1 Pedro", caps:5},
-  {id:"612pe", name:"2 Pedro", caps:3}, {id:"621jo", name:"1 Juan", caps:5},
-  {id:"632jo", name:"2 Juan", caps:1}, {id:"643jo", name:"3 Juan", caps:1},
-  {id:"65jd", name:"Judas", caps:1}, {id:"66re", name:"Apocalipsis", caps:22}
+<div id="toast" class="toast"></div>
+<div id="loader" class="loader">
+  <div class="loader-inner">
+    <div class="spin"></div>
+    <div id="loadMsg" class="load-msg">Cargando...</div>
+  </div>
+</div>
+
+<div id="helpModal" class="help-modal">
+  <div class="help-bg" id="helpBg"></div>
+  <div class="help-box">
+    <div class="help-head">
+      <b><span class="msi sm">help</span> Ayuda · JW-Notelink <span class="vbadge">v2.0.2</span></b>
+      <button class="btn icon" id="closeHelpBtn"><span class="msi sm">close</span></button>
+    </div>
+    <div class="help-body" id="helpBody"></div>
+  </div>
+</div>
+
+</body>
+<script>
+/* =========================================================
+   --Inicio-- CONSTANTES GLOBALES
+   ========================================================= */
+const APP = 'jw-notelink';
+const _JSZIP = window.JSZip || self.JSZip;
+const IDB_NAME = 'jw-notelink';
+const IDB_STORE = 'snapshots';
+const IDB_KEY = 'current';
+/* --Fin-- CONSTANTES GLOBALES */
+
+
+/* =========================================================
+   --Inicio-- ESTADO GLOBAL
+   ========================================================= */
+let S = {
+  SQL: null, db: null, manifest: null, hasNested: false, fileName: '',
+  notes: [], inputs: [], tags: [],
+  curTable: 'notes',
+  curId: null, curRowId: null, curIdx: -1,
+  selIds: new Set(),
+  COLORS: {0:'#facc15',1:'#22c55e',2:'#3b82f6',3:'#ec4899',4:'#f97316',5:'#06b6d4',6:'#8b5cf6'},
+  DEFAULT_COLOR: '#9e9e9e',
+  undoStack: [],
+  sessionFiles: []
+};
+let IMPORTED = [];
+/* --Fin-- ESTADO GLOBAL */
+
+
+/* =========================================================
+   --Inicio-- DATOS BÍBLICOS
+   ========================================================= */
+const bibleBooks = [
+  {num:1,name:"Génesis",abbr:["Gé","Gén","Gn","Gen","Ge","Genesis"]},
+  {num:2,name:"Éxodo",abbr:["Éx","Éxo","Ex","Exo","Exodo"]},
+  {num:3,name:"Levítico",abbr:["Le","Lev","Lv"]},
+  {num:4,name:"Números",abbr:["Nú","Núm","Nm","Num","Nu"]},
+  {num:5,name:"Deuteronomio",abbr:["Dt","Deu","Deut"]},
+  {num:6,name:"Josué",abbr:["Jos","Josue"]},
+  {num:7,name:"Jueces",abbr:["Jue","Juec","Jc"]},
+  {num:8,name:"Rut",abbr:["Rt","Ru"]},
+  {num:9,name:"1 Samuel",abbr:["1S","1Sa","1Sam","1 Samuel","1Samuel"]},
+  {num:10,name:"2 Samuel",abbr:["2S","2Sa","2Sam","2 Samuel","2Samuel"]},
+  {num:11,name:"1 Reyes",abbr:["1R","1Re","1Rey","1 Reyes"]},
+  {num:12,name:"2 Reyes",abbr:["2R","2Re","2Rey","2 Reyes"]},
+  {num:13,name:"1 Crónicas",abbr:["1Cr","1Cró","1 Crónicas","1Cronicas"]},
+  {num:14,name:"2 Crónicas",abbr:["2Cr","2Cró","2 Crónicas","2Cronicas"]},
+  {num:15,name:"Esdras",abbr:["Esd","Es"]},
+  {num:16,name:"Nehemías",abbr:["Ne","Neh","Nehemias"]},
+  {num:17,name:"Ester",abbr:["Est"]},
+  {num:18,name:"Job",abbr:["Job"]},
+  {num:19,name:"Salmos",abbr:["Sl","Sal","Salmo"]},
+  {num:20,name:"Proverbios",abbr:["Pr","Pro","Prov"]},
+  {num:21,name:"Eclesiastés",abbr:["Ec","Ecl","Eclesiastes","Qo"]},
+  {num:22,name:"El Cantar de los Cantares",abbr:["Can","Cnt","Cant","Cantares","Cantar"]},
+  {num:23,name:"Isaías",abbr:["Is","Isa","Isaias"]},
+  {num:24,name:"Jeremías",abbr:["Je","Jer","Jeremias","Jr"]},
+  {num:25,name:"Lamentaciones",abbr:["La","Lam","Lm"]},
+  {num:26,name:"Ezequiel",abbr:["Ez","Eze","Ezeq"]},
+  {num:27,name:"Daniel",abbr:["Da","Dan","Dn"]},
+  {num:28,name:"Oseas",abbr:["Os","Ose"]},
+  {num:29,name:"Joel",abbr:["Jl","Joe"]},
+  {num:30,name:"Amós",abbr:["Am","Amó","Amos","Amo"]},
+  {num:31,name:"Abdías",abbr:["Abd","Abdias","Ab"]},
+  {num:32,name:"Jonás",abbr:["Jon","Jonas"]},
+  {num:33,name:"Miqueas",abbr:["Mi","Miq"]},
+  {num:34,name:"Nahúm",abbr:["Na","Nah","Nahum"]},
+  {num:35,name:"Habacuc",abbr:["Hab"]},
+  {num:36,name:"Sofonías",abbr:["Sof","Sofonias","So"]},
+  {num:37,name:"Ageo",abbr:["Ag","Age","Hg"]},
+  {num:38,name:"Zacarías",abbr:["Za","Zac","Zacarias"]},
+  {num:39,name:"Malaquías",abbr:["Mal","Malaquias","Ma"]},
+  {num:40,name:"Mateo",abbr:["Mt","Mat"]},
+  {num:41,name:"Marcos",abbr:["Mr","Mc","Mar"]},
+  {num:42,name:"Lucas",abbr:["Lu","Lc","Luc"]},
+  {num:43,name:"Juan",abbr:["Jn","Ju"]},
+  {num:44,name:"Hechos",abbr:["Hch","Hech","Hec","Hechos de los Apóstoles"]},
+  {num:45,name:"Romanos",abbr:["Ro","Rom"]},
+  {num:46,name:"1 Corintios",abbr:["1Co","1 Cor","1Corintios","1 Corintios"]},
+  {num:47,name:"2 Corintios",abbr:["2Co","2 Cor","2Corintios","2 Corintios"]},
+  {num:48,name:"Gálatas",abbr:["Gá","Gál","Ga","Gal"]},
+  {num:49,name:"Efesios",abbr:["Ef","Efe"]},
+  {num:50,name:"Filipenses",abbr:["Flp","Filip","Fil","Fp"]},
+  {num:51,name:"Colosenses",abbr:["Col","Co"]},
+  {num:52,name:"1 Tesalonicenses",abbr:["1Te","1Tes","1 Tes","1Tesalonicenses"]},
+  {num:53,name:"2 Tesalonicenses",abbr:["2Te","2Tes","2 Tes","2Tesalonicenses"]},
+  {num:54,name:"1 Timoteo",abbr:["1Ti","1Tim","1 Tim","1Timoteo"]},
+  {num:55,name:"2 Timoteo",abbr:["2Ti","2Tim","2 Tim","2Timoteo"]},
+  {num:56,name:"Tito",abbr:["Tt","Tit"]},
+  {num:57,name:"Filemón",abbr:["Flm","Filem","Filemon"]},
+  {num:58,name:"Hebreos",abbr:["Heb","He"]},
+  {num:59,name:"Santiago",abbr:["Snt","Sant","Stg","Stgo"]},
+  {num:60,name:"1 Pedro",abbr:["1P","1Pe","1 Ped","1Pedro"]},
+  {num:61,name:"2 Pedro",abbr:["2P","2Pe","2 Ped","2Pedro"]},
+  {num:62,name:"1 Juan",abbr:["1Jn","1 Jn","1Juan"]},
+  {num:63,name:"2 Juan",abbr:["2Jn","2 Jn","2Juan"]},
+  {num:64,name:"3 Juan",abbr:["3Jn","3 Jn","3Juan"]},
+  {num:65,name:"Judas",abbr:["Jud","Jds"]},
+  {num:66,name:"Revelación",abbr:["Ap","Rev","Apocalipsis","Apo"]}
 ];
 
-let state = { version: "nwtsty", bookIdx: 0, chapter: 1 };
-let currentBookData = null;
-let currentTopics = [];
-let highlights = {};
-let notes = {};
-let selectedVerseId = null;
-let currentNoteVerseId = null;
-let viewingNoteId = null;
-let contentPanelVisible = false;
-
-// ★ NUEVAS VARIABLES: modo de lectura
-let readingMode = 'single'; // 'single' o 'interlinear'
-let interlinearVersions = ["nwtsty", "Rvr60"]; // versiones por defecto en modo interlineal
-let interlinearDataCache = {}; // caché de datos de versiones interlineales
-
-const DB_NAME = "BibliaMT_DB";
-const DB_VERSION = 2;
-let db;
-
-function initDB() {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
-    request.onupgradeneeded = (e) => {
-      const database = e.target.result;
-      if (!database.objectStoreNames.contains("highlights")) database.createObjectStore("highlights", { keyPath: "id" });
-      if (!database.objectStoreNames.contains("notes")) database.createObjectStore("notes", { keyPath: "id" });
-    };
-    request.onsuccess = (e) => { db = e.target.result; loadData(); resolve(db); };
-    request.onerror = (e) => reject(e);
+let bookMap = {}, parts = [];
+bibleBooks.forEach(b => {
+  let all = [b.name, ...b.abbr];
+  all.forEach(f => {
+    let k = f.toLowerCase().trim();
+    bookMap[k] = {num: b.num};
+    parts.push(f.replace(/\./g, '\\.'));
   });
-}
-
-function loadData() {
-  const txH = db.transaction(["highlights"], "readonly");
-  txH.objectStore("highlights").getAll().onsuccess = (e) => {
-    highlights = {};
-    e.target.result.forEach(h => { highlights[h.id] = h.color; });
-    if (currentBookData) renderChapter();
-  };
-  const txN = db.transaction(["notes"], "readonly");
-  txN.objectStore("notes").getAll().onsuccess = (e) => {
-    notes = {};
-    e.target.result.forEach(n => { notes[n.id] = n; });
-    if (currentBookData) renderChapter();
-  };
-}
-
-function showColorToolbar(verseElement, verseId) {
-  selectedVerseId = verseId;
-  const toolbar = document.getElementById('colorToolbar');
-  const rect = verseElement.getBoundingClientRect();
-  toolbar.style.top = (rect.bottom + window.scrollY + 5) + 'px';
-  toolbar.style.left = Math.max(10, Math.min(rect.left + window.scrollX, window.innerWidth - 320)) + 'px';
-  toolbar.classList.add('active');
-}
-
-function hideColorToolbar() {
-  document.getElementById('colorToolbar').classList.remove('active');
-  selectedVerseId = null;
-}
-
-function applyColor(colorClass) {
-  if (!selectedVerseId) return;
-  const tx = db.transaction(["highlights"], "readwrite");
-  const store = tx.objectStore("highlights");
-  if (colorClass === "") {
-    store.delete(selectedVerseId);
-    delete highlights[selectedVerseId];
-  } else {
-    const [bookId, chapter, verseIdx] = selectedVerseId.split('_');
-    store.put({ id: selectedVerseId, bookId, chapter: parseInt(chapter), verseIdx: parseInt(verseIdx), color: colorClass });
-    highlights[selectedVerseId] = colorClass;
-  }
-  const el = document.getElementById(`v-${selectedVerseId}`);
-  if (el) {
-    el.className = (readingMode === 'interlinear' ? 'interlinear-block ' : 'verse ') + colorClass;
-    updateNoteIndicator(selectedVerseId, colorClass);
-  }
-  hideColorToolbar();
-}
-
-document.addEventListener('click', (e) => {
-  const toolbar = document.getElementById('colorToolbar');
-  const isInsideModal = e.target.closest('.modal');
-  if (!toolbar.contains(e.target) && !e.target.closest('.verse') && !e.target.closest('.interlinear-block') && !isInsideModal) {
-    hideColorToolbar();
-  }
 });
+parts.sort((a,b) => b.length - a.length);
+let bookPat = `(?:${parts.join('|')})`;
+/* --Fin-- DATOS BÍBLICOS */
 
-function init() {
-  const vSel = document.getElementById('version');
-  Object.entries(VERSIONES).forEach(([key, name]) => {
-    const opt = document.createElement('option');
-    opt.value = key; opt.textContent = name;
-    if (key === state.version) opt.selected = true;
-    vSel.appendChild(opt);
-  });
-  const bSel = document.getElementById('book');
-  LIBROS.forEach((libro, idx) => {
-    const opt = document.createElement('option');
-    opt.value = idx; opt.textContent = libro.name;
-    bSel.appendChild(opt);
-  });
 
-  vSel.addEventListener('change', e => { state.version = e.target.value; loadChapter(); });
-  bSel.addEventListener('change', e => { state.bookIdx = parseInt(e.target.value); state.chapter = 1; updateChapterSelector(); loadChapter(); });
-  document.getElementById('chapter').addEventListener('change', e => { state.chapter = parseInt(e.target.value); loadChapter(); });
-
-  const saved = localStorage.getItem('bibliaState');
-  if (saved) {
-    try {
-      const s = JSON.parse(saved);
-      state = {...state, ...s};
-      if (s.readingMode) readingMode = s.readingMode;
-      if (s.interlinearVersions && Array.isArray(s.interlinearVersions)) interlinearVersions = s.interlinearVersions;
-      vSel.value = state.version;
-      bSel.value = state.bookIdx;
-      updateChapterSelector();
-      document.getElementById('chapter').value = state.chapter;
-      if(s.textSize) updateTextSize(s.textSize, true);
-    } catch(e) {}
-  } else {
-    updateChapterSelector();
-  }
-  
-  // Aplicar modo de lectura a la UI
-  applyReadingModeToUI();
-  initDB().then(() => loadChapter());
+/* =========================================================
+   --Inicio-- HELPERS DE TABLAS
+   ========================================================= */
+function tableExists(db, name){
+  try{
+    let r = db.exec(`SELECT name FROM sqlite_master WHERE type='table' AND name=?`, [name]);
+    return r.length > 0 && r[0].values.length > 0;
+  }catch(e){ return false; }
 }
 
-function updateChapterSelector() {
-  const cSel = document.getElementById('chapter');
-  cSel.innerHTML = '';
-  const totalCaps = LIBROS[state.bookIdx].caps;
-  for (let i = 1; i <= totalCaps; i++) {
-    const opt = document.createElement('option');
-    opt.value = i; opt.textContent = i;
-    if (i === state.chapter) opt.selected = true;
-    cSel.appendChild(opt);
-  }
-}
-
-async function loadChapter() {
-  const libro = LIBROS[state.bookIdx];
-  const content = document.getElementById('content');
-  content.innerHTML = '<div class="loading"><div class="spinner"></div>Cargando...</div>';
-  try {
-    const response = await fetch(`${state.version}/${libro.id}.json`);
-    if (!response.ok) throw new Error('No encontrado');
-    currentBookData = await response.json();
-    
-    // ★ Si está en modo interlineal, cargar también las otras versiones
-    if (readingMode === 'interlinear') {
-      interlinearDataCache = {};
-      interlinearDataCache[state.version] = currentBookData;
-      for (const vKey of interlinearVersions) {
-        if (vKey === state.version) continue;
-        try {
-          const res = await fetch(`${vKey}/${libro.id}.json`);
-          if (res.ok) {
-            interlinearDataCache[vKey] = await res.json();
-          }
-        } catch (e) { /* versión no disponible, se ignora */ }
-      }
+function getColName(db, table, candidates){
+  try{
+    let cols = db.exec(`PRAGMA table_info("${table}")`)[0].values.map(c => c[1]);
+    for(let c of candidates){
+      if(cols.includes(c)) return c;
     }
-    
-    await loadTopics(libro.id, state.chapter);
-    renderChapter();
-    document.getElementById('prevBtn').disabled = (state.bookIdx === 0 && state.chapter === 1);
-    document.getElementById('nextBtn').disabled = (state.bookIdx === LIBROS.length - 1 && state.chapter === LIBROS[LIBROS.length - 1].caps);
-    localStorage.setItem('bibliaState', JSON.stringify(state));
-    window.scrollTo({top: 0, behavior: 'smooth'});
-  } catch (error) {
-    content.innerHTML = `<div class="loading" style="color:red;">❌ Error: ${error.message}</div>`;
+  }catch(e){}
+  return null;
+}
+
+const TABLE_LABELS = {
+  Location:       { label: 'Ubicaciones',   icon: 'place' },
+  UserMark:       { label: 'Resaltados',    icon: 'highlight' },
+  Note:           { label: 'Notas',         icon: 'description' },
+  Tag:            { label: 'Etiquetas',     icon: 'label' },
+  TagMap:         { label: 'Etq. aplicadas',icon: 'label_important' },
+  BlockRange:     { label: 'Bloques',       icon: 'view_stream' },
+  Bookmark:       { label: 'Marcadores',    icon: 'bookmark' },
+  Playlist:       { label: 'Listas',        icon: 'queue_music' },
+  PlaylistItem:   { label: 'Items de lista',icon: 'playlist_play' },
+  InputField:     { label: 'InputFields',   icon: 'input' }
+};
+/* --Fin-- HELPERS DE TABLAS */
+
+
+/* =========================================================
+   --Inicio-- UTILIDADES GENERALES
+   ========================================================= */
+function pad(n,s){ n = String(n); while(n.length < s) n = '0' + n; return n; }
+
+function toSup(n){
+  const m = {'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};
+  return String(n).split('').map(d => m[d] || d).join('');
+}
+
+function esc(s){
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function isoDate(){ return new Date().toISOString(); }
+
+function formatIssueTag(n){
+  let s = String(n || '');
+  if(/^\d{8}$/.test(s)){
+    let year = s.slice(0,4);
+    let month = parseInt(s.slice(4,6));
+    let months = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+    return `${months[month-1] || month} ${year}`;
   }
+  return s;
 }
 
-async function loadTopics(bookId, chapter) {
-  try {
-    const response = await fetch(`contenido/${bookId}_cont.json`);
-    if (!response.ok) { currentTopics = []; return; }
-    const allTopics = await response.json();
-    currentTopics = allTopics.filter(t => t.capitulo === chapter).sort((a, b) => a.nivel - b.nivel);
-  } catch (error) { currentTopics = []; }
+function buildLocationLine(row){
+  if(!row) return '';
+  let parts = [];
+  let title = row.PubTitle || row.KeySymbol;
+  if(title && String(title).trim()) parts.push(`📖 ${esc(String(title).trim())}`);
+  if(row.ChapterNumber) parts.push(`Cap. ${row.ChapterNumber}`);
+  if(row.Track) parts.push(`Párr. ${row.Track}`);
+  if(row.IssueTagNumber) parts.push(`📅 ${formatIssueTag(row.IssueTagNumber)}`);
+  if(!parts.length && row.DocumentId) parts.push(`📄 Doc. ${row.DocumentId}`);
+  return parts.join(' · ');
+}
+/* --Fin-- UTILIDADES GENERALES */
+
+
+/* =========================================================
+   --Inicio-- PROCESAMIENTO DE CITAS BÍBLICAS
+   ========================================================= */
+function limpiarEnlaces(t){
+  t = t.replace(/(\d)\s*[⁰¹²³⁴⁵⁶⁷⁸⁹]+\s*(?=\d)/g, '$1,');
+  t = t.replace(/(\d)\s*[⁰¹²³⁴⁵⁶⁷⁸⁹]+\s*,/g, '$1,');
+  t = t.replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹]+/g, '');
+  t = t.replace(/\s*\{\s*https:\/\/www\.jw\.org\/finder\?pub=nwtsty&bible=[^\}\n]*[\}\)]\s*/gi, ' ');
+  t = t.replace(/\s*\[[^\]\n]*https:\/\/www\.jw\.org\/finder[^\]\n]*[\]\)]\s*/gi, ' ');
+  t = t.replace(/\s*<[^\n>]*https:\/\/www\.jw\.org\/finder[^\n>]*[>\)]\s*/gi, ' ');
+  return t.trim();
 }
 
-function updateNoteIndicator(vId, colorClass) {
-  const indicator = document.getElementById(`note-ind-${vId}`);
-  if (indicator) {
-    indicator.className = `note-indicator ${colorClass}`;
+function parseLine(line){
+  let mainRx = new RegExp(`(${bookPat})\\s+([1-9]\\d*)(?:[:\\.]\\s*([1-9]\\d*))?(?:\\s*[-–—]\\s*(?:([1-9]\\d*)[:\\.]\\s*)?([1-9]\\d*))?`, 'gi');
+  let segs = [], lastIdx = 0, m;
+  while((m = mainRx.exec(line)) !== null){
+    if(m.index > lastIdx) segs.push({t:'text', c: line.slice(lastIdx, m.index)});
+    let bName = m[1], ch1 = m[2], vs1 = m[3], vs2 = m[5];
+    let key = bName.toLowerCase().trim();
+    let book = bookMap[key] || bookMap[key.replace(/\./g,'')];
+    if(!book){ segs.push({t:'text', c: m[0]}); lastIdx = mainRx.lastIndex; continue; }
+    let bc = String(book.num), cc = pad(parseInt(ch1),3);
+    let v1 = vs1 ? pad(parseInt(vs1),3) : '001';
+    let v2 = vs2 ? pad(parseInt(vs2),3) : v1;
+    let params = vs1 ? `${bc}${cc}${v1}-${bc}${cc}${v2}` : `${bc}${cc}001-${bc}${cc}999`;
+    segs.push({t:'link', txt: m[0].trim(), params});
+    lastIdx = mainRx.lastIndex;
   }
+  if(lastIdx < line.length) segs.push({t:'text', c: line.slice(lastIdx)});
+  return segs;
 }
 
-function renderChapter() {
-  const libro = LIBROS[state.bookIdx];
-  
-  if (readingMode === 'interlinear') {
-    renderInterlinearChapter(libro);
-  } else {
-    renderSingleChapter(libro);
-  }
-  
-  if (currentTopics.length > 0 && contentPanelVisible) {
-    document.getElementById('content').innerHTML += renderContentPanel();
-  }
-}
-
-function renderSingleChapter(libro) {
-  const chapterData = currentBookData.chapters[state.chapter - 1];
-  if (!chapterData) return;
-  
-  let html = `<div class="version-info"><span class="material-icons" style="vertical-align:middle; margin-right:5px;">menu_book</span> ${VERSIONES[state.version]} • ${libro.name} ${state.chapter}<br><small style="font-weight:normal; opacity:0.8">Toca un versículo para opciones</small></div>`;
-  
-  chapterData.forEach((versiculo, idx) => {
-    const vId = `${libro.id}_${state.chapter}_${idx}`;
-    const hlClass = highlights[vId] || "";
-    const hasNote = notes[vId] ? '<span class="material-icons" style="font-size:0.9em; vertical-align:super; margin-left:2px;">sticky_note_2</span>' : '';
-    const noteClass = notes[vId] ? (highlights[vId] || "hl-yellow") : "";
-    
-    html += `<span class="verse ${hlClass}" id="v-${vId}" onclick="showColorToolbar(this, '${vId}')">
-      <span class="verse-num">${idx + 1} ${hasNote ? `<span id="note-ind-${vId}" class="note-indicator ${noteClass}" ondblclick="event.stopPropagation(); viewRenderedNote('${vId}')" onclick="event.stopPropagation(); viewRenderedNote('${vId}')">${hasNote}</span>` : ''}</span>
-      ${versiculo} 
-    </span>`;
-  });
-  
-  document.getElementById('content').innerHTML = html;
-}
-
-// ★ NUEVA FUNCIÓN: Renderizar capítulo en modo interlineal
-function renderInterlinearChapter(libro) {
-  // Determinar qué versiones están disponibles
-  const availableVersions = interlinearVersions.filter(v => interlinearDataCache[v]);
-  
-  if (availableVersions.length === 0) {
-    document.getElementById('content').innerHTML = `<div class="loading" style="color:red;">No hay traducciones disponibles. Selecciona al menos una en el botón de traducciones.</div>`;
-    return;
-  }
-  
-  // Tomar el número de versículos de la primera versión disponible
-  const primaryVersion = availableVersions[0];
-  const primaryData = interlinearDataCache[primaryVersion];
-  const chapterData = primaryData.chapters[state.chapter - 1];
-  if (!chapterData) return;
-  
-  let html = `<div class="version-info"><span class="material-icons" style="vertical-align:middle; margin-right:5px;">layers</span> Modo Interlineal • ${libro.name} ${state.chapter}<br><small style="font-weight:normal; opacity:0.8">${availableVersions.length} traducciones · Toca un versículo para opciones</small></div>`;
-  
-  chapterData.forEach((versiculo, idx) => {
-    const vId = `${libro.id}_${state.chapter}_${idx}`;
-    const hlClass = highlights[vId] || "";
-    const hasNote = notes[vId] ? '<span class="material-icons" style="font-size:0.9em; vertical-align:super; margin-left:2px;">sticky_note_2</span>' : '';
-    const noteClass = notes[vId] ? (highlights[vId] || "hl-yellow") : "";
-    
-    let blockHtml = `<div class="interlinear-block ${hlClass}" id="v-${vId}" onclick="showColorToolbar(this, '${vId}')">`;
-    
-    // Primera línea con el número del versículo y el indicador de nota
-    const firstVersion = availableVersions[0];
-    const firstText = interlinearDataCache[firstVersion].chapters[state.chapter - 1][idx] || '';
-    blockHtml += `<div class="interlinear-line">
-      <span class="verse-num-inline">${idx + 1} ${hasNote ? `<span id="note-ind-${vId}" class="note-indicator ${noteClass}" ondblclick="event.stopPropagation(); viewRenderedNote('${vId}')" onclick="event.stopPropagation(); viewRenderedNote('${vId}')">${hasNote}</span>` : ''}</span>
-      <span class="version-tag">${VERSIONES[firstVersion]}</span>
-      ${firstText}
-    </div>`;
-    
-    // Líneas adicionales para las demás versiones
-    for (let i = 1; i < availableVersions.length; i++) {
-      const vKey = availableVersions[i];
-      const vData = interlinearDataCache[vKey];
-      const vChapter = vData.chapters[state.chapter - 1];
-      const vText = vChapter ? (vChapter[idx] || '') : '[No disponible]';
-      blockHtml += `<div class="interlinear-line">
-        <span class="version-tag">${VERSIONES[vKey]}</span>
-        ${vText}
-      </div>`;
-    }
-    
-    blockHtml += `</div>`;
-    html += blockHtml;
-  });
-  
-  document.getElementById('content').innerHTML = html;
-}
-
-// ==========================================
-// ★ NUEVAS FUNCIONES: MODO DE LECTURA
-// ==========================================
-function setReadingMode(mode) {
-  readingMode = mode;
-  state.readingMode = mode;
-  localStorage.setItem('bibliaState', JSON.stringify(state));
-  applyReadingModeToUI();
-  loadChapter();
-  showToast('check_circle', mode === 'interlinear' ? 'Modo interlineal activado' : 'Modo una traducción activado');
-}
-
-function applyReadingModeToUI() {
-  const vSel = document.getElementById('version');
-  const interBtn = document.getElementById('interlinearBtn');
-  const singleBtn = document.getElementById('modeSingleBtn');
-  const interModeBtn = document.getElementById('modeInterlinearBtn');
-  
-  if (readingMode === 'interlinear') {
-    vSel.style.display = 'none';
-    interBtn.style.display = 'flex';
-    updateInterlinearBtnLabel();
-    if (singleBtn) singleBtn.classList.remove('active');
-    if (interModeBtn) interModeBtn.classList.add('active');
-  } else {
-    vSel.style.display = '';
-    interBtn.style.display = 'none';
-    if (singleBtn) singleBtn.classList.add('active');
-    if (interModeBtn) interModeBtn.classList.remove('active');
-  }
-}
-
-function updateInterlinearBtnLabel() {
-  const label = document.getElementById('interlinearBtnLabel');
-  const count = interlinearVersions.length;
-  label.textContent = count === 1 ? '1 traducción' : `${count} traducciones`;
-}
-
-function openInterlinearVersionsModal() {
-  const list = document.getElementById('versionsSelectList');
-  list.innerHTML = '';
-  Object.entries(VERSIONES).forEach(([key, name]) => {
-    const checked = interlinearVersions.includes(key) ? 'checked' : '';
-    list.innerHTML += `
-      <div class="version-option">
-        <input type="checkbox" id="vopt-${key}" value="${key}" ${checked}>
-        <label for="vopt-${key}">${name}</label>
-      </div>
-    `;
-  });
-  toggleModal('interlinearVersionsModal');
-}
-
-function saveInterlinearVersions() {
-  const checkboxes = document.querySelectorAll('#versionsSelectList input[type="checkbox"]:checked');
-  const selected = Array.from(checkboxes).map(cb => cb.value);
-  
-  if (selected.length === 0) {
-    showToast('error', 'Selecciona al menos una traducción');
-    return;
-  }
-  
-  interlinearVersions = selected;
-  state.interlinearVersions = selected;
-  localStorage.setItem('bibliaState', JSON.stringify(state));
-  updateInterlinearBtnLabel();
-  closeModal('interlinearVersionsModal');
-  loadChapter();
-  showToast('check_circle', `${selected.length} traducción(es) aplicada(s)`);
-}
-
-// ==========================================
-// GESTIÓN DE NOTAS
-// ==========================================
-function openNoteEditorForCurrent() {
-  if (selectedVerseId) {
-    currentNoteVerseId = selectedVerseId;
-    openNoteEditor(selectedVerseId);
-    document.getElementById('colorToolbar').classList.remove('active');
-  }
-}
-
-function openNoteEditor(vId) {
-  currentNoteVerseId = vId;
-  const existing = notes[vId];
-  document.getElementById('noteTitle').value = existing ? existing.title : '';
-  document.getElementById('noteContent').value = existing ? existing.content : '';
-  document.getElementById('noteTags').value = existing ? existing.tags : '';
-  document.getElementById('btnDeleteNote').style.display = existing ? 'flex' : 'none';
-  document.getElementById('noteEditorTitle').textContent = existing ? 'Editar Nota' : 'Nueva Nota';
-  toggleModal('noteEditorModal');
-}
-
-function saveCurrentNote() {
-  const vId = currentNoteVerseId;
-  if (!vId) {
-    showToast('error', 'No hay versículo asociado a esta nota');
-    return;
-  }
-  if (!db) {
-    showToast('error', 'Base de datos no lista');
-    return;
-  }
-  
-  const title = document.getElementById('noteTitle').value.trim() || 'Sin título';
-  const content = document.getElementById('noteContent').value;
-  const tags = document.getElementById('noteTags').value.trim();
-  
-  const [bookId, chapter, verseIdx] = vId.split('_');
-  const noteData = { id: vId, bookId, chapter: parseInt(chapter), verseIdx: parseInt(verseIdx), title, content, tags };
-  
-  try {
-    const tx = db.transaction(["notes"], "readwrite");
-    const store = tx.objectStore("notes");
-    const request = store.put(noteData);
-
-    request.onsuccess = () => {
-      notes[vId] = noteData;
-      currentNoteVerseId = null;
-      closeModal('noteEditorModal');
-      renderChapter();
-      showToast('check_circle', 'Nota guardada correctamente');
-    };
-
-    request.onerror = () => {
-      showToast('error', 'Error al guardar en la base de datos');
-    };
-  } catch (err) {
-    showToast('error', 'Error inesperado al guardar');
-  }
-}
-
-function deleteCurrentNote() {
-  const vId = currentNoteVerseId;
-  if (!vId) {
-    showToast('error', 'No hay nota seleccionada');
-    return;
-  }
-  if (!confirm('¿Eliminar esta nota permanentemente?')) return;
-  
-  try {
-    const tx = db.transaction(["notes"], "readwrite");
-    const store = tx.objectStore("notes");
-    const request = store.delete(vId);
-
-    request.onsuccess = () => {
-      delete notes[vId];
-      currentNoteVerseId = null;
-      closeModal('noteEditorModal');
-      renderChapter();
-      showToast('delete', 'Nota eliminada');
-    };
-    request.onerror = () => {
-      showToast('error', 'Error al eliminar la nota');
-    };
-  } catch (err) {
-    showToast('error', 'Error inesperado al eliminar');
-  }
-}
-
-// ==========================================
-// VER NOTA RENDERIZADA
-// ==========================================
-function viewRenderedNote(vId) {
-  const note = notes[vId];
-  if (!note) {
-    showToast('error', 'Nota no encontrada');
-    return;
-  }
-  viewingNoteId = vId;
-  const libro = LIBROS.find(l => l.id === note.bookId) || {name: 'Desconocido'};
-  const renderedContent = parseNoteContent(note.content);
-  
-  let bodyHtml = `<div class="note-view-title">${escapeHtml(note.title)}</div>`;
-  bodyHtml += `<div style="font-size:0.85em; color:#666; margin-bottom:12px; display:flex; align-items:center; gap:4px;">
-    <span class="material-icons" style="font-size:1em;">location_on</span>
-    ${libro.name} ${note.chapter}:${note.verseIdx + 1}
-  </div>`;
-  bodyHtml += `<div class="rendered-note">${renderedContent || '<em style="color:#999;">Sin contenido</em>'}</div>`;
-  if (note.tags) {
-    bodyHtml += `<div class="note-view-tags"><span class="material-icons" style="font-size:1em;">label</span> ${escapeHtml(note.tags)}</div>`;
-  }
-  
-  document.getElementById('noteViewBody').innerHTML = bodyHtml;
-  toggleModal('noteViewModal');
-}
-
-function editNoteFromView() {
-  if (!viewingNoteId) return;
-  const vId = viewingNoteId;
-  closeModal('noteViewModal');
-  setTimeout(() => openNoteEditor(vId), 200);
-}
-
-function escapeHtml(str) {
-  if (!str) return '';
-  const div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
-}
-
-// ==========================================
-// COPIAR VERSÍCULO
-// ==========================================
-function copyVerseText() {
-  if (!selectedVerseId) return;
-  const [bookId, chapter, verseIdx] = selectedVerseId.split('_');
-  const libro = LIBROS.find(l => l.id === bookId);
-  
-  let textToCopy = '';
-  
-  if (readingMode === 'interlinear') {
-    // En modo interlineal, copiar todas las versiones disponibles
-    textToCopy = `${libro.name} ${chapter}:${parseInt(verseIdx) + 1}\n\n`;
-    interlinearVersions.forEach(vKey => {
-      if (interlinearDataCache[vKey]) {
-        const vData = interlinearDataCache[vKey];
-        const vChapter = vData.chapters[parseInt(chapter) - 1];
-        if (vChapter && vChapter[verseIdx]) {
-          textToCopy += `[${VERSIONES[vKey]}]\n${vChapter[verseIdx]}\n\n`;
-        }
+function transformarCompleto(titulo, contenido, modo){
+  let base = "https://www.jw.org/finder?pub=nwtsty&bible=";
+  let counter = 0;
+  let allFoot = [];
+  function proc(txt){
+    let segs = parseLine(limpiarEnlaces(txt)), out = '', foot = [];
+    segs.forEach(s => {
+      if(s.t === 'text') out += s.c;
+      else {
+        if(modo === 'inline') out += `${s.txt} { ${base}${s.params} }`;
+        else { counter++; out += `${s.txt}${toSup(counter)}`; foot.push(`<${toSup(counter)} ${base}${s.params} >`); }
       }
     });
-  } else {
-    const chapterData = currentBookData.chapters[chapter - 1];
-    const verseText = chapterData[verseIdx];
-    const versionName = VERSIONES[state.version];
-    textToCopy = `${libro.name} ${chapter}:${parseInt(verseIdx) + 1}\n${versionName}: ${verseText}`;
+    return {text: out, foot};
   }
-
-  if (navigator.clipboard && window.isSecureContext) {
-    navigator.clipboard.writeText(textToCopy.trim()).then(() => {
-      showToast('content_copy', 'Versículo copiado al portapapeles');
-      hideColorToolbar();
-    }).catch(() => fallbackCopy(textToCopy.trim()));
-  } else {
-    fallbackCopy(textToCopy.trim());
-  }
-}
-
-function fallbackCopy(text) {
-  const ta = document.createElement('textarea');
-  ta.value = text;
-  ta.style.position = 'fixed';
-  ta.style.left = '-9999px';
-  document.body.appendChild(ta);
-  ta.select();
-  try {
-    document.execCommand('copy');
-    showToast('content_copy', 'Versículo copiado al portapapeles');
-  } catch (err) {
-    showToast('error', 'Error al copiar');
-  }
-  document.body.removeChild(ta);
-  hideColorToolbar();
-}
-
-function showToast(icon, msg) {
-  const toast = document.createElement('div');
-  toast.className = 'toast';
-  toast.innerHTML = `<span class="material-icons">${icon}</span> ${msg}`;
-  document.body.appendChild(toast);
-  setTimeout(() => toast.remove(), 2500);
-}
-
-// ==========================================
-// SINTAXIS EN NOTAS Y REFERENCIAS
-// ==========================================
-function parseNoteContent(content) {
-  if (!content) return '';
-  let html = content;
-  html = html.replace(/\(([^$]+)\$([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
-  html = html.replace(/\[([^#]+)#(\d+|[=])x(\d+|[=])\]/g, (match, url, w, h) => {
-    let style = 'max-width:100%;';
-    if (w !== '=') style += `width:${w}px;`; else style += `width:100%;`;
-    if (h !== '=') style += `height:${h}px;`; else style += `height:auto;`;
-    return `<img src="${url}" style="${style}" alt="Imagen en nota">`;
-  });
-  html = html.replace(/\(\+([^@]+?)\s+(\d+):(\d+(?:-\d+)?)(?:@(\w+))?\)/g, (match, bookName, cap, vers, version) => {
-    const cleanBook = bookName.trim();
-    return `<span class="verse-ref-link" onclick="showVerseRef('${cleanBook}', ${cap}, '${vers}', ${version ? `'${version}'` : 'null'})"><span class="material-icons btn-small-icon">menu_book</span> ${cleanBook} ${cap}:${vers}${version ? ' ('+version+')' : ''}</span>`;
-  });
-  return html.replace(/\n/g, '<br>');
-}
-
-async function showVerseRef(bookName, cap, versRange, specificVersion) {
-  const modalBody = document.getElementById('verseRefBody');
-  document.getElementById('verseRefTitle').textContent = `📖 ${bookName} ${cap}:${versRange}`;
-  modalBody.innerHTML = '<div class="loading"><div class="spinner"></div>Cargando...</div>';
-  toggleModal('verseRefModal');
-  
-  const libro = LIBROS.find(l => l.name.toLowerCase() === bookName.toLowerCase());
-  if (!libro) {
-    modalBody.innerHTML = '<p style="color:red; text-align:center;">Libro no encontrado.</p>';
-    return;
-  }
-  
-  let html = '';
-  const versionsToCheck = specificVersion ? {[specificVersion]: VERSIONES[specificVersion]} : VERSIONES;
-  
-  for (const [vKey, vName] of Object.entries(versionsToCheck)) {
-    try {
-      const res = await fetch(`${vKey}/${libro.id}.json`);
-      if (!res.ok) continue;
-      const data = await res.json();
-      const chapterData = data.chapters[cap - 1];
-      if (!chapterData) continue;
-      
-      const [start, end] = versRange.split('-').map(Number);
-      const actualEnd = end || start;
-      let versesText = [];
-      for (let i = start; i <= actualEnd; i++) {
-        if (chapterData[i - 1]) versesText.push(`<sup>${i}</sup> ${chapterData[i - 1]}`);
+  let tR = proc(titulo);
+  if(tR.foot.length) allFoot.push(...tR.foot);
+  let outLines = [];
+  limpiarEnlaces(contenido).split('\n').forEach(par => {
+    if(!par.trim()){ outLines.push(par); return; }
+    let segs = parseLine(par), s = '';
+    segs.forEach(x => {
+      if(x.t === 'text') s += x.c;
+      else {
+        if(modo === 'inline') s += `${x.txt} { ${base}${x.params} }`;
+        else { counter++; s += `${x.txt}${toSup(counter)}`; allFoot.push(`<${toSup(counter)} ${base}${x.params} >`); }
       }
-      
-      if (versesText.length > 0) {
-        html += `<div class="ref-modal-verse">
-          <span class="version-tag"><span class="material-icons btn-small-icon">menu_book</span> ${vName}</span>
-          <span class="verse-text">${versesText.join(' ')}</span>
-        </div>`;
+    });
+    outLines.push(s);
+  });
+  let finalContent = outLines.join('\n');
+  if(allFoot.length) finalContent += (finalContent ? '\n\n' : '') + allFoot.join(' ');
+  return {title: tR.text, content: finalContent};
+}
+/* --Fin-- PROCESAMIENTO DE CITAS BÍBLICAS */
+
+
+/* =========================================================
+   --Inicio-- INDEXEDDB (persistencia local)
+   ========================================================= */
+function idbOpen(){
+  return new Promise((res, rej) => {
+    let req = indexedDB.open(IDB_NAME, 1);
+    req.onupgradeneeded = e => {
+      let db = e.target.result;
+      if(!db.objectStoreNames.contains(IDB_STORE)){
+        db.createObjectStore(IDB_STORE);
       }
-    } catch (e) { console.error(e); }
-  }
-  
-  modalBody.innerHTML = html || '<p style="text-align:center; color:#666;">No se encontraron versículos.</p>';
-}
-
-// ==========================================
-// LISTAS Y MODALES
-// ==========================================
-function toggleModal(id) {
-  const modal = document.getElementById(id);
-  if (id === 'notesListModal') renderNotesList();
-  if (id === 'bookmarksModal') renderBookmarksList();
-  modal.classList.toggle('active');
-}
-
-function closeModal(id) { 
-  document.getElementById(id).classList.remove('active'); 
-}
-
-function renderNotesList() {
-  const body = document.getElementById('notesListBody');
-  const keys = Object.keys(notes).sort((a, b) => a.localeCompare(b, undefined, {numeric: true}));
-  if (keys.length === 0) {
-    body.innerHTML = '<p style="text-align:center; padding:20px; color:#666;">No hay notas guardadas.</p>';
-    return;
-  }
-  let html = '';
-  keys.forEach(key => {
-    const n = notes[key];
-    const libro = LIBROS.find(l => l.id === n.bookId) || {name: 'Desconocido'};
-    const renderedContent = parseNoteContent(n.content);
-    const lineColor = highlights[key] ? getColorCode(highlights[key]) : '#ccc';
-    
-    html += `
-      <div class="list-item" style="flex-direction: column; align-items: flex-start; padding: 15px;">
-        <div style="display: flex; justify-content: space-between; width: 100%; margin-bottom: 8px; align-items: center;">
-          <div class="list-item-ref" style="flex:1; cursor:pointer;" onclick="goToLocation('${n.bookId}', ${n.chapter}, ${n.verseIdx}); closeModal('notesListModal');">
-            <span class="material-icons" style="color:#6a1b9a;">sticky_note_2</span>
-            <div>
-              ${libro.name} ${n.chapter}:${n.verseIdx + 1}
-              <br><small style="color:#6a1b9a; font-weight:bold;">${escapeHtml(n.title)}</small>
-            </div>
-          </div>
-          <div style="display:flex; align-items:center;">
-            <span class="material-icons list-item-edit" onclick="event.stopPropagation(); openNoteEditor('${key}')" title="Editar nota">edit</span>
-            <span class="material-icons list-item-delete" onclick="event.stopPropagation(); deleteNoteById('${key}')" title="Eliminar nota">delete</span>
-          </div>
-        </div>
-        <div class="rendered-note" style="width:100%; font-size:0.95em; line-height:1.5; color:#333; background:#f9f9f9; padding:12px; border-radius:6px; border-left: 4px solid ${lineColor};">
-          ${renderedContent || '<em style="color:#999;">Sin contenido</em>'}
-        </div>
-        ${n.tags ? `<div style="margin-top:8px; font-size:0.85em; color:#666; display:flex; align-items:center; gap:4px;"><span class="material-icons" style="font-size:1em;">label</span> ${escapeHtml(n.tags)}</div>` : ''}
-      </div>`;
-  });
-  body.innerHTML = html;
-}
-
-function renderBookmarksList() {
-  const body = document.getElementById('bookmarksListBody');
-  const keys = Object.keys(highlights).sort((a, b) => a.localeCompare(b, undefined, {numeric: true}));
-  if (keys.length === 0) {
-    body.innerHTML = '<p style="text-align:center; padding:20px; color:#666;">No hay marcadores.</p>';
-    return;
-  }
-  let html = '';
-  keys.forEach(key => {
-    const [bookId, chapter, verseIdx] = key.split('_');
-    const libro = LIBROS.find(l => l.id === bookId);
-    const color = highlights[key];
-    html += `<div class="list-item" onclick="closeModal('bookmarksModal'); goToLocation('${bookId}', ${chapter}, ${verseIdx})">
-      <div class="list-item-ref"><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${getColorCode(color)};margin-right:8px;"></span>${libro.name} ${chapter}:${parseInt(verseIdx)+1}</div>
-      <span class="material-icons list-item-delete" onclick="event.stopPropagation(); deleteHighlight('${key}')" title="Eliminar">delete</span>
-    </div>`;
-  });
-  body.innerHTML = html;
-}
-
-function deleteNoteById(key) {
-  if (!confirm('¿Eliminar esta nota?')) return;
-  const tx = db.transaction(["notes"], "readwrite");
-  tx.objectStore("notes").delete(key);
-  delete notes[key];
-  renderNotesList();
-  renderChapter();
-}
-
-function goToLocation(bookId, chapter, verseIdx) {
-  state.bookIdx = LIBROS.findIndex(l => l.id === bookId);
-  state.chapter = chapter;
-  document.getElementById('book').value = state.bookIdx;
-  updateChapterSelector();
-  document.getElementById('chapter').value = chapter;
-  loadChapter().then(() => {
-    setTimeout(() => {
-      const el = document.getElementById(`v-${bookId}_${chapter}_${verseIdx}`);
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        el.classList.add('scroll-to');
-        setTimeout(() => el.classList.remove('scroll-to'), 2000);
-      }
-    }, 300);
+    };
+    req.onsuccess = () => res(req.result);
+    req.onerror = () => rej(req.error);
   });
 }
 
-function deleteHighlight(key) {
-  const tx = db.transaction(["highlights"], "readwrite");
-  tx.objectStore("highlights").delete(key);
-  delete highlights[key];
-  renderBookmarksList();
-  renderChapter();
+async function idbSave(data){
+  try{
+    let db = await idbOpen();
+    return new Promise((res, rej) => {
+      let tx = db.transaction(IDB_STORE, 'readwrite');
+      tx.objectStore(IDB_STORE).put(data, IDB_KEY);
+      tx.oncomplete = () => res(true);
+      tx.onerror = () => rej(tx.error);
+    });
+  }catch(e){ console.warn('idbSave:', e); return false; }
 }
 
-function getColorCode(className) {
-  const colors = {'hl-orange':'#ffcc80', 'hl-yellow':'#fff9c4', 'hl-green':'#c8e6c9', 'hl-blue':'#bbdefb', 'hl-purple':'#e1bee7'};
-  return colors[className] || '#ccc';
+async function idbLoad(){
+  try{
+    let db = await idbOpen();
+    return new Promise((res, rej) => {
+      let tx = db.transaction(IDB_STORE, 'readonly');
+      let req = tx.objectStore(IDB_STORE).get(IDB_KEY);
+      req.onsuccess = () => res(req.result || null);
+      req.onerror = () => rej(req.error);
+    });
+  }catch(e){ console.warn('idbLoad:', e); return null; }
 }
 
-// ==========================================
-// EXPORTAR / IMPORTAR (.mbe)
-// ==========================================
-async function exportData() {
-  if (typeof JSZip === 'undefined') { alert('Error: Librería JSZip no cargada. Verifica tu conexión.'); return; }
-  const zip = new JSZip();
-  zip.file("marcadores", JSON.stringify(highlights, null, 2));
-  let notesTxt = "";
-  Object.values(notes).forEach(n => {
-    notesTxt += `*/${n.title}/*\n`;
-    notesTxt += `*|${n.content.replace(/\n/g, '\n')}|*\n`;
-    notesTxt += `*~${n.tags}~*\n\n`;
-  });
-  zip.file("notas", notesTxt);
-  
-  const blob = await zip.generateAsync({type: "blob"});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `BibliaMT_Backup_${new Date().toISOString().slice(0,10)}.mbe`;
-  a.click();
-  URL.revokeObjectURL(url);
-  showToast('file_download', 'Datos exportados correctamente');
+async function idbClear(){
+  try{
+    let db = await idbOpen();
+    return new Promise((res, rej) => {
+      let tx = db.transaction(IDB_STORE, 'readwrite');
+      tx.objectStore(IDB_STORE).delete(IDB_KEY);
+      tx.oncomplete = () => res(true);
+      tx.onerror = () => rej(tx.error);
+    });
+  }catch(e){ console.warn('idbClear:', e); return false; }
 }
 
-async function importData(input) {
-  const file = input.files[0];
-  if (!file) return;
-  if (typeof JSZip === 'undefined') { alert('Error: Librería JSZip no cargada.'); return; }
-  
-  try {
-    const zip = await JSZip.loadAsync(file);
-    const marcadoresFile = zip.file("marcadores");
-    if (marcadoresFile) {
-      const data = JSON.parse(await marcadoresFile.async("text"));
-      const txH = db.transaction(["highlights"], "readwrite");
-      const storeH = txH.objectStore("highlights");
-      for (const [id, color] of Object.entries(data)) {
-        const [bookId, chapter, verseIdx] = id.split('_');
-        storeH.put({ id, bookId, chapter: parseInt(chapter), verseIdx: parseInt(verseIdx), color });
-      }
+/* Guardar snapshot actual en IndexedDB */
+async function saveSnapshot(){
+  if(!IMPORTED.length) return;
+  try{
+    let payload = {
+      lastUpdated: isoDate(),
+      sessionFiles: S.sessionFiles,
+      importedFiles: IMPORTED.map(it => ({
+        fileName: it.fileName,
+        manifest: it.manifest,
+        hasNested: it.hasNested,
+        stats: it.stats,
+        dbBuffer: it.dbBuffer
+      }))
+    };
+    await idbSave(payload);
+  }catch(e){ console.warn('saveSnapshot:', e); }
+}
+
+/* Restaurar snapshot al recargar */
+async function tryRestoreSnapshot(){
+  try{
+    let data = await idbLoad();
+    if(!data || !data.importedFiles || !data.importedFiles.length) return false;
+    showLoad('Restaurando sesión anterior...');
+    S.sessionFiles = data.sessionFiles || data.importedFiles.map(f => f.fileName);
+    IMPORTED = [];
+    for(let f of data.importedFiles){
+      let sqlDb = new S.SQL.Database(new Uint8Array(f.dbBuffer));
+      IMPORTED.push({
+        fileName: f.fileName, manifest: f.manifest, dbBuffer: f.dbBuffer,
+        sqlDb: sqlDb, stats: f.stats, hasNested: f.hasNested
+      });
     }
-    
-    const notasFile = zip.file("notas");
-    if (notasFile) {
-      const text = await notasFile.async("text");
-      const txN = db.transaction(["notes"], "readwrite");
-      const storeN = txN.objectStore("notes");
-      const regex = /\*\/(.*?)\/\*\s*\n\*\|(.*?)\|\*\s*\n\*\~(.*?)\~\*/gs;
-      let match;
-      while ((match = regex.exec(text)) !== null) {
-        const title = match[1].trim();
-        const content = match[2].trim();
-        const tags = match[3].trim();
-        const tempId = "imported_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5);
-        storeN.put({ id: tempId, bookId: "00", chapter: 0, verseIdx: 0, title, content, tags });
-      }
-    }
-    showToast('file_upload', 'Datos importados. Recargando...');
-    setTimeout(() => location.reload(), 1500);
-  } catch (e) {
-    showToast('error', 'Error al importar: ' + e.message);
-  }
-  input.value = '';
-}
-
-// ==========================================
-// UTILIDADES Y CONFIGURACIÓN
-// ==========================================
-// ★ MODIFICADO: Tamaño de texto en pt (8 a 30)
-function updateTextSize(val, isInit = false) {
-  const ptValue = parseInt(val);
-  document.documentElement.style.setProperty('--text-size', ptValue + 'pt');
-  document.getElementById('textSizeLabel').textContent = ptValue + ' pt';
-  document.getElementById('textSizeRange').value = ptValue;
-  state.textSize = ptValue;
-  if (!isInit) {
-    localStorage.setItem('bibliaState', JSON.stringify(state));
-  }
-}
-
-function toggleContentPanel() {
-  contentPanelVisible = !contentPanelVisible;
-  document.getElementById('contentBtn').classList.toggle('active', contentPanelVisible);
-  renderChapter();
-  if (contentPanelVisible) {
-    setTimeout(() => document.querySelector('.content-panel')?.scrollIntoView({ behavior: 'smooth' }), 100);
-  }
-}
-
-function renderContentPanel() {
-  let html = '<div class="content-panel"><h3><span class="material-icons">list</span> Contenido del Capítulo</h3>';
-  let currentLevel0 = null;
-  currentTopics.forEach((topic, idx) => {
-    if (topic.nivel === 0) {
-      if (currentLevel0 !== null) html += '</div>';
-      html += `<div class="topic-level-0"><div class="topic-title">${topic.tema}</div>`;
-      currentLevel0 = idx;
+    if(IMPORTED.length === 1){
+      loadFileFromDb(IMPORTED[0].sqlDb, IMPORTED[0].manifest, IMPORTED[0].fileName, IMPORTED[0].hasNested);
     } else {
-      const levelClass = topic.nivel === 1 ? 'topic-level-1' : 'topic-level-2';
-      const indent = topic.nivel === 2 ? 'margin-left: 25px;' : '';
-      html += `<div class="${levelClass}" id="topic-${idx}" style="${indent}">
-        <div class="topic-title" onclick="toggleTopic(${idx})"><span class="material-icons btn-small-icon">expand_more</span> ${topic.tema}</div>
-        <div class="topic-preview" id="preview-${idx}">${topic.tema}</div>
-        ${renderVerseLinks(topic)}
-        <button class="toggle-btn" onclick="toggleTopic(${idx})"><span class="material-icons btn-small-icon">expand_more</span> Ver más</button>
-      </div>`;
+      // Si hay varios, se mergean sobre el primero
+      let base = IMPORTED[0];
+      let baseDb = base.sqlDb;
+      for(let i = 1; i < IMPORTED.length; i++){
+        let secDb = IMPORTED[i].sqlDb;
+        mergeNotesAndUserMarks(baseDb, secDb);
+      }
+      for(let i = 1; i < IMPORTED.length; i++){
+        try{ IMPORTED[i].sqlDb.close(); }catch(e){}
+      }
+      IMPORTED = [base];
+      loadFileFromDb(baseDb, base.manifest, base.fileName, base.hasNested);
     }
-  });
-  if (currentLevel0 !== null) html += '</div>';
-  return html + '</div>';
-}
-
-function renderVerseLinks(topic) {
-  if (!topic.versiculos || topic.versiculos.trim() === '') return '<div style="color:#999; font-size:0.85em; margin-top:8px; display:flex; align-items:center; gap:4px;"><span class="material-icons btn-small-icon">menu_book</span> Todo el capítulo</div>';
-  const verses = topic.versiculos.split(',').map(v => v.trim()).filter(v => v);
-  let links = [];
-  verses.forEach(v => {
-    const range = v.split('-');
-    if (range.length === 2) links.push(`<span class="verse-link" onclick="scrollToVerse(${range[0]})"><span class="material-icons btn-small-icon">menu_book</span> ${topic.capitulo}:${range[0]}-${range[1]}</span>`);
-    else if (!isNaN(parseInt(v))) links.push(`<span class="verse-link" onclick="scrollToVerse(${parseInt(v)})"><span class="material-icons btn-small-icon">menu_book</span> ${topic.capitulo}:${v}</span>`);
-  });
-  return `<div class="topic-verses">${links.join(' ')}</div>`;
-}
-
-function toggleTopic(idx) {
-  const topic = document.getElementById(`topic-${idx}`);
-  const preview = document.getElementById(`preview-${idx}`);
-  const btn = topic.querySelector('.toggle-btn');
-  if (topic.classList.contains('expanded')) {
-    topic.classList.remove('expanded'); preview.classList.remove('expanded'); btn.innerHTML = '<span class="material-icons btn-small-icon">expand_more</span> Ver más';
-  } else {
-    topic.classList.add('expanded'); preview.classList.add('expanded'); btn.innerHTML = '<span class="material-icons btn-small-icon">expand_less</span> Ver menos';
+    renderImportGrid();
+    let totalNames = S.sessionFiles.length;
+    toast(`Restaurados ${totalNames} backup${totalNames!==1?'s':''} desde el caché local`);
+    hideLoad();
+    return true;
+  }catch(e){
+    console.warn('tryRestoreSnapshot:', e);
+    hideLoad();
+    return false;
   }
 }
+/* --Fin-- INDEXEDDB */
 
-function scrollToVerse(verseNum) {
-  const vId = `${LIBROS[state.bookIdx].id}_${state.chapter}_${verseNum - 1}`;
-  const el = document.getElementById(`v-${vId}`);
-  if (el) {
-    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    el.classList.add('scroll-to');
-    setTimeout(() => el.classList.remove('scroll-to'), 2000);
-  }
+
+/* =========================================================
+   --Inicio-- UNDO (máx. 20 pasos)
+   ========================================================= */
+const UNDO_LIMIT = 20;
+
+function pushUndo(){
+  let ta = document.getElementById('eContent') || document.getElementById('eInputValue');
+  let ti = document.getElementById('eTitle');
+  if(!ta) return;
+  S.undoStack.push({
+    title: ti ? ti.value : '',
+    content: ta.value,
+    target: document.getElementById('eInputValue') ? 'input' : 'note'
+  });
+  if(S.undoStack.length > UNDO_LIMIT) S.undoStack.shift();
+  updateUndoBtn();
 }
 
-function prevChapter() {
-  if (state.chapter > 1) state.chapter--;
-  else if (state.bookIdx > 0) { state.bookIdx--; state.chapter = LIBROS[state.bookIdx].caps; document.getElementById('book').value = state.bookIdx; updateChapterSelector(); }
-  document.getElementById('chapter').value = state.chapter; loadChapter();
+function undoChange(){
+  if(!S.undoStack.length) return toast('Nada que deshacer');
+  let last = S.undoStack.pop();
+  let ta = document.getElementById('eContent') || document.getElementById('eInputValue');
+  let ti = document.getElementById('eTitle');
+  if(ta) ta.value = last.content;
+  if(ti && last.title !== undefined) ti.value = last.title;
+  updateUndoBtn();
+  toast('Estado restaurado');
 }
 
-function nextChapter() {
-  const totalCaps = LIBROS[state.bookIdx].caps;
-  if (state.chapter < totalCaps) state.chapter++;
-  else if (state.bookIdx < LIBROS.length - 1) { state.bookIdx++; state.chapter = 1; document.getElementById('book').value = state.bookIdx; updateChapterSelector(); }
-  document.getElementById('chapter').value = state.chapter; loadChapter();
+function updateUndoBtn(){
+  let b = document.getElementById('undoBtn');
+  if(!b) return;
+  let n = S.undoStack.length;
+  b.disabled = n === 0;
+  b.style.opacity = n === 0 ? '0.4' : '1';
+  let c = document.getElementById('undoCount');
+  if(c){ c.textContent = n; c.style.display = n > 0 ? 'inline-flex' : 'none'; }
 }
 
-function normalizeText(text) { return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\w\s]/g, ""); }
+function clearUndo(){ S.undoStack = []; updateUndoBtn(); }
+/* --Fin-- UNDO */
 
-async function performSearch() {
-  const query = document.getElementById('searchInput').value.trim();
-  if (query.length < 3) { alert("Escribe al menos 3 letras."); return; }
-  const modalBody = document.getElementById('verseRefBody');
-  document.getElementById('verseRefTitle').textContent = `Buscando: "${query}"`;
-  modalBody.innerHTML = '<div class="loading"><div class="spinner"></div>Buscando...</div>';
-  toggleModal('verseRefModal');
 
-  const normQuery = normalizeText(query);
-  const results = [];
-  for (const [vKey, vName] of Object.entries(VERSIONES)) {
-    for (const libro of LIBROS) {
-      try {
-        const res = await fetch(`${vKey}/${libro.id}.json`);
-        if (!res.ok) continue;
-        const data = await res.json();
-        data.chapters.forEach((versiculos, capIdx) => {
-          versiculos.forEach((vTexto, idx) => {
-            if (normalizeText(vTexto).includes(normQuery)) {
-              let hText = vTexto;
-              query.trim().split(/\s+/).forEach(word => {
-                const safe = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                hText = hText.replace(new RegExp(`(${safe})`, 'gi'), '<mark>$1</mark>');
-              });
-              results.push({ vName, vKey, ref: `${libro.name} ${capIdx+1}:${idx+1}`, text: hText, bookIdx: LIBROS.findIndex(l=>l.id===libro.id), chapter: capIdx+1, verseIdx: idx });
-            }
-          });
+/* =========================================================
+   --Inicio-- UTILIDADES UI (toast, loader, sheet)
+   ========================================================= */
+async function initSQL(){
+  S.SQL = await initSqlJs({locateFile: f => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/${f}`});
+}
+initSQL().then(() => { setTimeout(() => tryRestoreSnapshot(), 300); });
+
+function toast(m){
+  let el = document.getElementById('toast');
+  el.textContent = m;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+function showLoad(m){
+  document.getElementById('loadMsg').textContent = m;
+  document.getElementById('loader').classList.add('on');
+}
+
+function hideLoad(){ document.getElementById('loader').classList.remove('on'); }
+
+function openSheet(){
+  document.getElementById('overlay').classList.add('on');
+  document.getElementById('sheet').classList.add('on');
+}
+
+function closeSheet(){
+  document.getElementById('overlay').classList.remove('on');
+  document.getElementById('sheet').classList.remove('on');
+  S.curId = null; S.curRowId = null;
+}
+
+document.getElementById('overlay').addEventListener('click', closeSheet);
+document.getElementById('closeSheetBtn').addEventListener('click', closeSheet);
+/* --Fin-- UTILIDADES UI */
+
+
+/* =========================================================
+   --Inicio-- TABS (Notas / InputField)
+   ========================================================= */
+function switchTab(t){
+  S.curTable = t;
+  document.getElementById('tabNotes').classList.toggle('active', t === 'notes');
+  document.getElementById('tabInputs').classList.toggle('active', t === 'inputs');
+
+  // El filtro de etiquetas SOLO aparece en Notas
+  let tagFilterEl = document.getElementById('tagFilter');
+  if(tagFilterEl) tagFilterEl.style.display = (t === 'notes') ? 'block' : 'none';
+
+  updateBatchTools();
+  renderList(document.getElementById('searchIn').value);
+  closeSheet();
+}
+document.getElementById('tabNotes').addEventListener('click', () => switchTab('notes'));
+document.getElementById('tabInputs').addEventListener('click', () => switchTab('inputs'));
+/* --Fin-- TABS */
+
+
+/* =========================================================
+   --Inicio-- CARGA DE DATOS
+   ========================================================= */
+
+/* NOTAS */
+function loadNotes(){
+  S.notes = [];
+  if(!tableExists(S.db, 'Note')){ document.getElementById('cntNotes').textContent = 0; return; }
+  try{
+    let hasLoc = tableExists(S.db, 'Location');
+    let hasUM = tableExists(S.db, 'UserMark');
+    let noteCols = S.db.exec('PRAGMA table_info("Note")')[0].values.map(c => c[1]);
+
+    let sel = ['n.NoteId','n.Guid','n.UserMarkId','n.Title','n.Content','n.LastModified'];
+    if(noteCols.includes('BlockType'))       sel.push('n.BlockType');
+    if(noteCols.includes('BlockIdentifier')) sel.push('n.BlockIdentifier');
+    if(noteCols.includes('LocationId'))      sel.push('n.LocationId');
+    if(hasUM) sel.push('u.ColorIndex as colorIdx');
+    else sel.push('NULL as colorIdx');
+
+    if(hasLoc){
+      let locCols = S.db.exec('PRAGMA table_info("Location")')[0].values.map(c => c[1]);
+      if(locCols.includes('Title'))          sel.push('l.Title as PubTitle');
+      if(locCols.includes('ChapterNumber'))  sel.push('l.ChapterNumber');
+      if(locCols.includes('Track'))          sel.push('l.Track');
+      if(locCols.includes('DocumentId'))     sel.push('l.DocumentId');
+      if(locCols.includes('IssueTagNumber')) sel.push('l.IssueTagNumber');
+      if(locCols.includes('KeySymbol'))      sel.push('l.KeySymbol');
+    }
+
+    let joins = '';
+    if(hasUM) joins += ' LEFT JOIN UserMark u ON n.UserMarkId = u.UserMarkId';
+    if(hasLoc && noteCols.includes('LocationId')) joins += ' LEFT JOIN Location l ON n.LocationId = l.LocationId';
+
+    let r = S.db.exec(`SELECT ${sel.join(',')} FROM Note n ${joins} ORDER BY n.LastModified DESC`);
+    if(r.length && r[0].values.length){
+      let cols = r[0].columns;
+      S.notes = r[0].values.map(v => {
+        let o = {}; cols.forEach((k,i) => o[k] = v[i]);
+        if(o.colorIdx === null || o.colorIdx === undefined) o.colorIdx = null;
+        return o;
+      });
+    } else {
+      let r2 = S.db.exec(`SELECT * FROM Note ORDER BY LastModified DESC`);
+      if(r2.length){
+        let cols = r2[0].columns;
+        S.notes = r2[0].values.map(row => {
+          let o = {}; cols.forEach((k,i) => o[k] = row[i]);
+          o.colorIdx = null; return o;
         });
-      } catch (e) {}
+      }
     }
+  }catch(e){
+    console.error('loadNotes:', e);
   }
-  if (results.length === 0) modalBody.innerHTML = '<p style="text-align:center; padding:20px;">No se encontraron resultados.</p>';
-  else modalBody.innerHTML = results.map(r => `<div class="list-item" style="flex-direction:column; align-items:flex-start;" onclick="closeModal('verseRefModal'); goToLocation('${r.vKey}', ${r.bookIdx}, ${r.chapter}); setTimeout(()=>scrollToVerse(${r.verseIdx+1}), 500)">
-    <div style="font-weight:bold; color:#6a1b9a; font-size:0.85em; display:flex; align-items:center; gap:4px;"><span class="material-icons btn-small-icon">menu_book</span> ${r.vName} • ${r.ref}</div>
-    <div style="font-size:0.95em; margin-top:4px;">${r.text}</div>
-  </div>`).join('');
+  document.getElementById('cntNotes').textContent = S.notes.length;
 }
 
-init();
+/* INPUTFIELD */
+function loadInputs(){
+  S.inputs = [];
+  if(!tableExists(S.db, 'InputField')){ document.getElementById('cntInputs').textContent = 0; return; }
+  try{
+    let colsInfo = S.db.exec('PRAGMA table_info("InputField")')[0].values;
+    let textCols = colsInfo.filter(c => /TEXT/i.test(c[2])).map(c => c[1]);
+    if(!textCols.includes('Value')) textCols.push('Value');
+    let allCols = colsInfo.map(c => c[1]);
+
+    let hasLoc = tableExists(S.db, 'Location');
+    let sel = ['i.rowid', 'i.*'];
+    let joins = '';
+    if(hasLoc){
+      let locCol = allCols.includes('LocationId') ? 'LocationId' : (allCols.includes('LocationID') ? 'LocationID' : null);
+      if(locCol){
+        sel.push('l.Title as PubTitle','l.ChapterNumber','l.Track','l.DocumentId','l.IssueTagNumber','l.KeySymbol');
+        joins = ` LEFT JOIN Location l ON i.${locCol} = l.LocationId`;
+      }
+    }
+    let r = S.db.exec(`SELECT ${sel.join(',')} FROM InputField i ${joins} ORDER BY i.rowid DESC`);
+    if(r.length){
+      let cols = r[0].columns;
+      S.inputs = r[0].values.map(row => {
+        let o = {_rowid: row[0], _textCols: textCols};
+        cols.slice(1).forEach((c,i) => o[c] = row[i+1]);
+        return o;
+      });
+    }
+  }catch(e){
+    console.warn('Inputs (fallback):', e.message);
+    try{
+      let colsInfo = S.db.exec('PRAGMA table_info("InputField")')[0].values;
+      let textCols = colsInfo.filter(c => /TEXT/i.test(c[2])).map(c => c[1]);
+      if(!textCols.includes('Value')) textCols.push('Value');
+      let r = S.db.exec(`SELECT rowid,* FROM InputField ORDER BY rowid DESC`);
+      if(r.length){
+        let cols = r[0].columns;
+        S.inputs = r[0].values.map(row => {
+          let o = {_rowid: row[0], _textCols: textCols};
+          cols.slice(1).forEach((c,i) => o[c] = row[i+1]);
+          return o;
+        });
+      }
+    }catch(e2){}
+  }
+  document.getElementById('cntInputs').textContent = S.inputs.length;
+}
+
+/* ETIQUETAS (solo para filtrar notas) */
+function loadTags(){
+  S.tags = [];
+  let sel = document.getElementById('tagFilter');
+  if(!tableExists(S.db, 'Tag')){
+    sel.innerHTML = `<option value="">🏷️ Sin etiquetas</option>`;
+    return;
+  }
+  try{
+    let r = S.db.exec(`SELECT * FROM Tag ORDER BY Name ASC`);
+    if(r.length){
+      let cols = r[0].columns;
+      let idIdx = cols.indexOf('TagId');
+      let nameIdx = cols.indexOf('Name');
+      S.tags = r[0].values.map(row => ({TagId: row[idIdx], Name: row[nameIdx]}));
+    }
+  }catch(e){}
+  sel.innerHTML = `<option value="">🏷️ Todas las etiquetas</option>` +
+    S.tags.map(t => `<option value="${t.TagId}">${esc(t.Name)}</option>`).join('');
+}
+
+/* Cargar todo desde la DB a la vez */
+function loadFileFromDb(db, manifest, fileName, hasNested){
+  S.db = db;
+  S.manifest = manifest;
+  S.fileName = fileName;
+  S.hasNested = hasNested;
+  S.selIds = new Set();
+  loadNotes();
+  loadInputs();
+  loadTags();
+  document.getElementById('expBtn').disabled = false;
+
+  let totalFiles = S.sessionFiles.length || IMPORTED.length || 1;
+  let info;
+  if(totalFiles > 1){
+    info = `${totalFiles} backups: ${S.sessionFiles.slice(0, 3).join(', ')}${S.sessionFiles.length > 3 ? ` +${S.sessionFiles.length - 3} más` : ''}`;
+  } else {
+    info = fileName;
+  }
+  document.getElementById('fileInfo').textContent = `${info} (${S.notes.length} notas, ${S.inputs.length} inputs)`;
+  S.curTable = 'notes';
+  switchTab('notes');
+  toast(`Cargado: ${S.notes.length} notas · ${S.inputs.length} inputs`);
+}
+/* --Fin-- CARGA DE DATOS */
+
+
+/* =========================================================
+   --Inicio-- SELECCIÓN PERSISTENTE
+   ========================================================= */
+function toggleSel(id, checked){
+  if(checked) S.selIds.add(id);
+  else S.selIds.delete(id);
+  updateBatchTools();
+}
+
+function getSelectedNotes(){ return Array.from(S.selIds); }
+
+function deselectAll(){
+  S.selIds.clear();
+  document.querySelectorAll('.note-cb:checked').forEach(cb => cb.checked = false);
+  updateBatchTools();
+}
+document.getElementById('deselectBtn').addEventListener('click', deselectAll);
+
+function updateBatchTools(){
+  let sel = S.selIds;
+  let bar = document.getElementById('batchTools');
+  let cnt = document.getElementById('selCount');
+  let des = document.getElementById('deselectBtn');
+  let batchCnt = document.getElementById('batchCount');
+  if(S.curTable !== 'notes' || sel.size === 0){
+    bar.classList.remove('on');
+    cnt.textContent = '';
+    des.style.display = 'none';
+    return;
+  }
+  bar.classList.add('on');
+  cnt.textContent = `(${sel.size} seleccionadas)`;
+  des.style.display = 'inline-block';
+  if(batchCnt) batchCnt.textContent = sel.size;
+}
+/* --Fin-- SELECCIÓN PERSISTENTE */
+
+
+/* =========================================================
+   --Inicio-- RENDER LISTA
+   ========================================================= */
+function renderList(filter = ''){
+  let f = (filter || '').toLowerCase();
+  let list = document.getElementById('nList');
+  let countEl = document.getElementById('nCount');
+  let tagFilter = document.getElementById('tagFilter').value;
+
+  /* ---- NOTAS ---- */
+  if(S.curTable === 'notes'){
+    let tagNoteIds = null;
+    if(tagFilter && tableExists(S.db, 'TagMap')){
+      tagNoteIds = new Set();
+      try{
+        let r = S.db.exec(`SELECT NoteId FROM TagMap WHERE TagId = ?`, [parseInt(tagFilter)]);
+        if(r.length) r[0].values.forEach(row => tagNoteIds.add(row[0]));
+      }catch(e){}
+    }
+    let arr = S.notes.filter(n => {
+      if(tagNoteIds && !tagNoteIds.has(n.NoteId)) return false;
+      if(!f) return true;
+      return (n.Title||'').toLowerCase().includes(f) ||
+             (n.Content||'').toLowerCase().includes(f) ||
+             (n.PubTitle||'').toLowerCase().includes(f);
+    });
+    countEl.textContent = `${arr.length} notas`;
+    if(!arr.length){ list.innerHTML = `<div class="empty">Sin notas</div>`; return; }
+    list.innerHTML = arr.map(n => {
+      let col = (n.colorIdx !== null && n.colorIdx !== undefined && S.COLORS[n.colorIdx] !== undefined)
+                ? S.COLORS[n.colorIdx] : S.DEFAULT_COLOR;
+      let act = S.curId === n.NoteId ? 'act' : '';
+      let checked = S.selIds.has(n.NoteId) ? 'checked' : '';
+      let locStr = buildLocationLine(n);
+      let locLine = locStr
+        ? `<div class="ni-loc">${locStr}</div>`
+        : '';
+      return `<div class="ni ${act}" onclick="openNote(${n.NoteId})">
+        <input type="checkbox" class="note-cb" data-id="${n.NoteId}" ${checked}
+               onclick="event.stopPropagation(); toggleSel(${n.NoteId}, this.checked)">
+        <div class="dot" style="background:${col};left:34px;top:17px"></div>
+        <div class="ni-title">${esc(n.Title||'Sin título')}</div>
+        <div class="ni-prev">${esc((n.Content||'').replace(/\s+/g,' ').slice(0,200))}</div>
+        ${locLine}
+      </div>`;
+    }).join('');
+
+  /* ---- INPUTFIELD ---- */
+  } else if(S.curTable === 'inputs'){
+    let arr = S.inputs.filter(it => {
+      if(!f) return true;
+      let cols = it._textCols || ['Value'];
+      return cols.some(c => String(it[c]||'').toLowerCase().includes(f));
+    });
+    countEl.textContent = `${arr.length} inputs`;
+    if(!arr.length){ list.innerHTML = `<div class="empty">Sin InputField</div>`; return; }
+    list.innerHTML = arr.map(it => {
+      let act = S.curRowId === it._rowid ? 'act' : '';
+      let preview = String(it.Value||'').replace(/\s+/g,' ').slice(0,150) || 'Vacío';
+      let locStr = buildLocationLine(it);
+      let locLine = locStr ? `<div class="ni-loc">${locStr}</div>` : '';
+      return `<div class="ni ${act}" onclick="openInput(${it._rowid})">
+        <div class="dot" style="background:var(--primary);left:34px;top:17px"></div>
+        <div class="ni-title">${esc(preview)}</div>
+        <div class="ni-prev">${it.Value ? esc(String(it.Value).slice(0,80)) : 'Sin contenido'}</div>
+        ${locLine}
+      </div>`;
+    }).join('');
+  }
+}
+
+document.getElementById('searchIn').addEventListener('input', e => renderList(e.target.value));
+document.getElementById('tagFilter').addEventListener('change', () => renderList(document.getElementById('searchIn').value));
+/* --Fin-- RENDER LISTA */
+
+
+/* =========================================================
+   --Inicio-- ABRIR NOTA
+   ========================================================= */
+function openNote(id){
+  S.curId = id; S.curRowId = null;
+  S.curIdx = S.notes.findIndex(n => n.NoteId === id);
+  clearUndo();
+  renderList(document.getElementById('searchIn').value);
+  let n = S.notes[S.curIdx]; if(!n) return;
+
+  let currentColorIdx = (n.colorIdx !== null && n.colorIdx !== undefined) ? n.colorIdx : -1;
+  let colorsHtml = `
+    <div class="color ${currentColorIdx === -1 ? 'sel' : ''}" data-color="-1"
+         style="background:${S.DEFAULT_COLOR}"
+         onclick="pickColor(-1)" title="Gris (sin color)"></div>
+  ` + Object.entries(S.COLORS).map(([i,c]) =>
+    `<div class="color ${parseInt(i)===currentColorIdx?'sel':''}"
+      data-color="${i}"
+      style="background:${c}"
+      onclick="pickColor(${i})"></div>`
+  ).join('');
+
+  document.getElementById('sheetTitle').textContent = 'Editar nota';
+  document.getElementById('sheetBody').innerHTML = `
+    ${buildLocationLine(n) ? `
+      <div class="loc-card">
+        <span class="msi sm">menu_book</span>
+        <div class="loc-card-text">${buildLocationLine(n)}</div>
+      </div>` : ''}
+    <div class="fg"><label>Título</label><input id="eTitle" value="${esc(n.Title||'')}"></div>
+    <div class="fg"><label>Contenido</label><textarea id="eContent">${esc(n.Content||'')}</textarea>
+      <div class="link-tools">
+        <select id="linkMode">
+          <option value="inline">INLINE { }</option>
+          <option value="footnote">FOOTNOTE (al final)</option>
+        </select>
+        <button class="btn primary" onclick="aplicarActual()"><span class="msi sm">link</span>Enlaces</button>
+        <button class="btn" onclick="abrirModalTexto('note')"><span class="msi sm">menu_book</span>Texto</button>
+        <button id="undoBtn" class="btn undo-btn" onclick="undoChange()" disabled title="Deshacer (máx. 20)">
+          <span class="msi sm">undo</span>
+          <span id="undoCount" class="undo-count">0</span>
+        </button>
+      </div>
+    </div>
+    <div class="fg"><label>Color</label><div class="color-picker">${colorsHtml}</div></div>`;
+
+  document.getElementById('sheetFoot').innerHTML = `
+    <button class="btn danger-btn" onclick="delNote()"><span class="msi sm">delete</span>Eliminar</button>
+    <div class="foot-spacer"></div>
+    <button class="btn" onclick="closeSheet()">Cerrar</button>
+    <button class="btn primary" onclick="saveNote()"><span class="msi sm">save</span>Guardar</button>`;
+  openSheet();
+}
+/* --Fin-- ABRIR NOTA */
+
+
+/* =========================================================
+   --Inicio-- ABRIR INPUTFIELD
+   ========================================================= */
+function openInput(rowid){
+  S.curRowId = rowid; S.curId = null;
+  S.curIdx = S.inputs.findIndex(it => it._rowid === rowid);
+  clearUndo();
+  renderList(document.getElementById('searchIn').value);
+  let it = S.inputs[S.curIdx]; if(!it) return;
+
+  document.getElementById('sheetTitle').textContent = 'Editar InputField';
+  document.getElementById('sheetBody').innerHTML = `
+    ${buildLocationLine(it) ? `
+      <div class="loc-card">
+        <span class="msi sm">menu_book</span>
+        <div class="loc-card-text">${buildLocationLine(it)}</div>
+      </div>` : ''}
+    <div class="fg"><label>Value (único editable)</label>
+      <textarea id="eInputValue" class="input-value">${esc(it.Value||'')}</textarea>
+      <div class="link-tools">
+        <button class="btn primary" onclick="abrirModalTexto('input')"><span class="msi sm">menu_book</span>Texto bíblico</button>
+        <button class="btn" onclick="aplicarEnlacesInput()"><span class="msi sm">link</span>Enlaces</button>
+        <button id="undoBtn" class="btn undo-btn" onclick="undoChange()" disabled title="Deshacer (máx. 20)">
+          <span class="msi sm">undo</span>
+          <span id="undoCount" class="undo-count">0</span>
+        </button>
+      </div>
+    </div>`;
+
+  document.getElementById('sheetFoot').innerHTML = `
+    <button class="btn danger-btn" onclick="delInput()"><span class="msi sm">delete</span>Eliminar</button>
+    <div class="foot-spacer"></div>
+    <button class="btn" onclick="closeSheet()">Cerrar</button>
+    <button class="btn primary" onclick="saveInput()"><span class="msi sm">save</span>Guardar</button>`;
+  openSheet();
+}
+/* --Fin-- ABRIR INPUTFIELD */
+
+
+/* =========================================================
+   --Inicio-- GUARDAR / ELIMINAR / CREAR
+   ========================================================= */
+function pickColor(i){
+  if(S.curIdx < 0) return;
+  S.notes[S.curIdx].colorIdx = (i === -1) ? null : i;
+  document.querySelectorAll('#sheetBody .color').forEach((el) => {
+    let val = parseInt(el.getAttribute('data-color'));
+    if(val === i){
+      el.classList.add('sel');
+    } else {
+      el.classList.remove('sel');
+    }
+  });
+}
+
+function saveNote(){
+  let n = S.notes[S.curIdx]; if(!n) return;
+  let t = document.getElementById('eTitle').value;
+  let c = document.getElementById('eContent').value;
+  let now = isoDate();
+  try{
+    S.db.run("UPDATE Note SET Title=?,Content=?,LastModified=? WHERE NoteId=?", [t, c, now, n.NoteId]);
+    if(n.UserMarkId && n.colorIdx !== null && n.colorIdx !== undefined){
+      let umCol = getColName(S.db, 'UserMark', ['UserMarkId','UserMarkID']);
+      if(umCol) S.db.run(`UPDATE UserMark SET ColorIndex=? WHERE ${umCol}=?`, [n.colorIdx, n.UserMarkId]);
+    }
+    n.Title = t; n.Content = c; n.LastModified = now;
+    renderList(document.getElementById('searchIn').value);
+    saveSnapshot();
+    toast('Nota guardada');
+    closeSheet();
+  }catch(e){ toast(e.message); }
+}
+
+function saveInput(){
+  let it = S.inputs[S.curIdx]; if(!it) return;
+  let v = document.getElementById('eInputValue').value;
+  try{
+    S.db.run("UPDATE InputField SET Value=? WHERE rowid=?", [v, it._rowid]);
+    it.Value = v;
+    renderList(document.getElementById('searchIn').value);
+    saveSnapshot();
+    toast('InputField guardado');
+    closeSheet();
+  }catch(e){ toast(e.message); }
+}
+
+function newNote(){
+  if(!S.db) return toast('Abre un archivo primero');
+  try{
+    let g = crypto.randomUUID();
+    let umg = crypto.randomUUID();
+    let now = isoDate();
+    let umId = null;
+    if(tableExists(S.db, 'UserMark')){
+      try{
+        S.db.run("INSERT INTO UserMark(UserMarkGuid) VALUES(?)", [umg]);
+        umId = S.db.exec("SELECT last_insert_rowid()")[0].values[0][0];
+      }catch(e){
+        try{
+          S.db.run("INSERT INTO UserMark(UserMarkGuid,ColorIndex,StyleIndex) VALUES(?,?,?)", [umg,0,0]);
+          umId = S.db.exec("SELECT last_insert_rowid()")[0].values[0][0];
+        }catch(e2){}
+      }
+    }
+    let noteCols = S.db.exec('PRAGMA table_info("Note")')[0].values.map(c => c[1]);
+    let insCols = [], insVals = [];
+    if(noteCols.includes('Guid'))         { insCols.push('Guid');         insVals.push(g); }
+    if(noteCols.includes('GUID'))         { insCols.push('GUID');         insVals.push(g); }
+    if(noteCols.includes('UserMarkID') && umId !== null){ insCols.push('UserMarkID'); insVals.push(umId); }
+    if(noteCols.includes('UserMarkId') && umId !== null){ insCols.push('UserMarkId'); insVals.push(umId); }
+    if(noteCols.includes('UserMarkGuid')) { insCols.push('UserMarkGuid'); insVals.push(umg); }
+    if(noteCols.includes('Title'))        { insCols.push('Title');        insVals.push(''); }
+    if(noteCols.includes('Content'))      { insCols.push('Content');      insVals.push(''); }
+    if(noteCols.includes('LastModified')) { insCols.push('LastModified'); insVals.push(now); }
+    if(noteCols.includes('Created'))      { insCols.push('Created');      insVals.push(now); }
+    let ph = insCols.map(() => '?').join(',');
+    S.db.run(`INSERT INTO Note (${insCols.join(',')}) VALUES (${ph})`, insVals);
+    let newId = S.db.exec("SELECT last_insert_rowid()")[0].values[0][0];
+    loadNotes();
+    S.curTable = 'notes';
+    switchTab('notes');
+    openNote(newId);
+    setTimeout(() => { let ti = document.getElementById('eTitle'); if(ti) ti.focus(); }, 450);
+    saveSnapshot();
+    toast('Nueva nota creada');
+  }catch(e){ console.error(e); toast('Error: ' + e.message); }
+}
+
+function delNote(){
+  if(!confirm('¿Eliminar nota?')) return;
+  try{
+    S.db.run("DELETE FROM Note WHERE NoteId=?", [S.notes[S.curIdx].NoteId]);
+    S.selIds.delete(S.notes[S.curIdx].NoteId);
+    loadNotes(); renderList(); closeSheet(); saveSnapshot(); toast('Eliminada');
+  }catch(e){ toast(e.message); }
+}
+
+function delInput(){
+  if(!confirm('¿Eliminar InputField?')) return;
+  try{
+    S.db.run("DELETE FROM InputField WHERE rowid=?", [S.inputs[S.curIdx]._rowid]);
+    loadInputs(); renderList(); closeSheet(); saveSnapshot(); toast('Eliminado');
+  }catch(e){ toast(e.message); }
+}
+/* --Fin-- GUARDAR / ELIMINAR / CREAR */
+
+
+/* =========================================================
+   --Inicio-- APLICAR ENLACES / TEXTO BÍBLICO
+   ========================================================= */
+function aplicarActual(){
+  let ta = document.getElementById('eContent'), ti = document.getElementById('eTitle');
+  if(!ta || !ti) return;
+  pushUndo();
+  let modo = document.getElementById('linkMode').value;
+  let res = transformarCompleto(ti.value, ta.value, modo);
+  ti.value = res.title; ta.value = res.content;
+  toast('Enlaces aplicados');
+}
+
+function aplicarEnlacesInput(){
+  let ta = document.getElementById('eInputValue'); if(!ta) return;
+  pushUndo();
+  let res = transformarCompleto('', ta.value, 'inline');
+  ta.value = res.content;
+  toast('Enlaces aplicados');
+}
+/* --Fin-- APLICAR ENLACES / TEXTO BÍBLICO */
+
+
+/* =========================================================
+   --Inicio-- BATCH (eliminar, copiar, fusionar)
+   ========================================================= */
+function batchDelete(){
+  let ids = getSelectedNotes(); if(!ids.length) return;
+  if(!confirm(`¿Eliminar ${ids.length} notas?`)) return;
+  ids.forEach(id => { try{ S.db.run("DELETE FROM Note WHERE NoteId=?", [id]); }catch(e){} });
+  S.selIds.clear();
+  loadNotes(); renderList(); updateBatchTools(); saveSnapshot();
+  toast(`${ids.length} eliminadas`);
+}
+
+function batchCopy(){
+  let ids = getSelectedNotes(); if(!ids.length) return;
+  let txt = S.notes.filter(n => ids.includes(n.NoteId))
+    .map(n => `--- ${n.Title||'Sin título'} ---\n${n.Content||''}`).join('\n\n');
+  navigator.clipboard.writeText(txt).then(() => toast('Copiado')).catch(() => toast('Error copiar'));
+}
+
+function batchMerge(){
+  let ids = getSelectedNotes();
+  if(ids.length < 2) return toast('Selecciona al menos 2');
+  let notes = S.notes.filter(n => ids.includes(n.NoteId));
+  let topics = [...new Set(notes.map(n => n.Title).filter(Boolean))];
+  let opts = topics.map(t => `<option value="${esc(t)}">${esc(t)}</option>`).join('');
+  let div = document.createElement('div');
+  div.className = 'merge-modal';
+  div.id = 'mergeModal';
+  div.innerHTML = `<div class="merge-box">
+    <h3>Fusionar ${ids.length} notas</h3>
+    <div class="merge-fields">
+      <input list="topics" id="mergeTopic" placeholder="Tema">
+      <datalist id="topics">${opts}<option value="Notas Fusionadas"></option></datalist>
+    </div>
+    <textarea readonly class="merge-preview">${esc(notes.map(n => n.Content).join('\n\n---\n\n'))}</textarea>
+    <div class="merge-actions">
+      <button class="btn" onclick="document.getElementById('mergeModal').remove()">Cancelar</button>
+      <button class="btn primary" id="confirmMerge">Fusionar</button>
+    </div>
+  </div>`;
+  document.body.appendChild(div);
+
+  document.getElementById('confirmMerge').onclick = () => {
+    let title = document.getElementById('mergeTopic').value || 'Notas Fusionadas';
+    let content = notes.map(n => n.Content||'').join('\n\n---\n\n');
+    let now = isoDate();
+    let g = crypto.randomUUID(), umg = crypto.randomUUID();
+    try{
+      let noteCols = S.db.exec('PRAGMA table_info("Note")')[0].values.map(c => c[1]);
+      let umCols = tableExists(S.db, 'UserMark') ? S.db.exec('PRAGMA table_info("UserMark")')[0].values.map(c => c[1]) : [];
+      let umId = null;
+      if(umCols.length){
+        let umIns = [], umVals = [];
+        if(umCols.includes('UserMarkGuid')) { umIns.push('UserMarkGuid'); umVals.push(umg); }
+        if(umCols.includes('ColorIndex'))   { umIns.push('ColorIndex');   umVals.push(0); }
+        if(umCols.includes('StyleIndex'))   { umIns.push('StyleIndex');   umVals.push(0); }
+        if(umIns.length){
+          S.db.run(`INSERT INTO UserMark(${umIns.join(',')}) VALUES (${umIns.map(()=>'?').join(',')})`, umVals);
+          umId = S.db.exec("SELECT last_insert_rowid()")[0].values[0][0];
+        }
+      }
+      let insCols = [], insVals = [];
+      if(noteCols.includes('Guid'))         { insCols.push('Guid');         insVals.push(g); }
+      if(noteCols.includes('GUID'))         { insCols.push('GUID');         insVals.push(g); }
+      if(noteCols.includes('UserMarkID') && umId !== null){ insCols.push('UserMarkID'); insVals.push(umId); }
+      if(noteCols.includes('UserMarkId') && umId !== null){ insCols.push('UserMarkId'); insVals.push(umId); }
+      if(noteCols.includes('UserMarkGuid')) { insCols.push('UserMarkGuid'); insVals.push(umg); }
+      if(noteCols.includes('Title'))        { insCols.push('Title');        insVals.push(title); }
+      if(noteCols.includes('Content'))      { insCols.push('Content');      insVals.push(content); }
+      if(noteCols.includes('LastModified')) { insCols.push('LastModified'); insVals.push(now); }
+      if(noteCols.includes('Created'))      { insCols.push('Created');      insVals.push(now); }
+      S.db.run(`INSERT INTO Note(${insCols.join(',')}) VALUES (${insCols.map(()=>'?').join(',')})`, insVals);
+      ids.forEach(id => { try{ S.db.run("DELETE FROM Note WHERE NoteId=?", [id]); }catch(e){} });
+      S.selIds.clear();
+      loadNotes(); renderList(); updateBatchTools(); saveSnapshot();
+      toast('Fusionadas');
+    }catch(e){ toast(e.message); }
+    div.remove();
+  };
+}
+
+document.getElementById('batchDelBtn').addEventListener('click', batchDelete);
+document.getElementById('batchCopyBtn').addEventListener('click', batchCopy);
+document.getElementById('batchMergeBtn').addEventListener('click', batchMerge);
+document.getElementById('batchDeselectBtn').addEventListener('click', deselectAll);
+document.getElementById('newNoteBtn').addEventListener('click', newNote);
+/* --Fin-- BATCH */
+
+
+/* =========================================================
+   --Inicio-- MODAL TEXTO BÍBLICO
+   ========================================================= */
+const BOOK_ID = {
+  1:"01gn",2:"02ex",3:"03lv",4:"04nm",5:"05dt",6:"06js",7:"07jud",8:"08rt",
+  9:"091sm",10:"102sm",11:"111kgs",12:"122kgs",13:"131ch",14:"142ch",
+  15:"15ezr",16:"16ne",17:"17et",18:"18job",19:"19ps",20:"20prv",
+  21:"21ec",22:"22so",23:"23is",24:"24jr",25:"25lm",26:"26ez",
+  27:"27dn",28:"28ho",29:"29jl",30:"30am",31:"31ob",32:"32jn",
+  33:"33mi",34:"34na",35:"35hk",36:"36zp",37:"37hg",38:"38zc",
+  39:"39ml",40:"40mt",41:"41mk",42:"42lk",43:"43jo",44:"44act",
+  45:"45rm",46:"461co",47:"472co",48:"48gl",49:"49eph",50:"50ph",
+  51:"51cl",52:"521ts",53:"532ts",54:"541tm",55:"552tm",56:"56tt",
+  57:"57phm",58:"58hb",59:"59jm",60:"601pe",61:"612pe",62:"621jo",
+  63:"632jo",64:"643jo",65:"65jd",66:"66re"
+};
+const VERSIONES_TXT = { "NWT": "nwtsty", "RVR1960": "Rvr60", "DHH": "dhh", "LBLA": "lbla", "NBLA": "nbla", "NTV": "ntv", "NVI": "nvi", "RVA2015": "rva2015", "RVC": "rvc", "TLA": "tla"};
+const URL_BASE = "https://desgarenecillos.github.io/Biblia_Multitraduccion";
+let cacheTxt = {}, cursorPos = 0, targetInput = 'note';
+
+function numSupra(n){
+  const m = {'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};
+  return String(n).split('').map(d => m[d] || d).join('');
+}
+
+function parseRango(i){
+  let s = new Set();
+  i.split(',').forEach(p => {
+    p = p.trim(); if(!p) return;
+    if(p.includes('-')){
+      let [a,b] = p.split('-').map(x => parseInt(x));
+      for(let k = a; k <= b; k++) s.add(k);
+    } else s.add(parseInt(p));
+  });
+  return [...s].sort((a,b) => a - b);
+}
+
+function abrirModalTexto(target){
+  targetInput = target;
+  let ta = document.getElementById(target === 'input' ? 'eInputValue' : 'eContent');
+  cursorPos = ta ? ta.selectionStart : 0;
+  document.getElementById('t_ver').innerHTML = Object.keys(VERSIONES_TXT).map(k => `<option value="${k}">${k}</option>`).join('');
+  document.getElementById('t_lib').innerHTML = bibleBooks.map(b => `<option value="${b.num}">${b.name}</option>`).join('');
+  document.getElementById('bibModal').classList.add('on');
+  cargarCapitulos();
+}
+
+function cerrarModalTexto(){ document.getElementById('bibModal').classList.remove('on'); }
+
+async function cargarCapitulos(){
+  const ver = document.getElementById('t_ver').value;
+  const libNum = parseInt(document.getElementById('t_lib').value);
+  const bookId = BOOK_ID[libNum];
+  const carpeta = VERSIONES_TXT[ver];
+  const key = `${ver}/${bookId}`;
+  document.getElementById('t_prev').innerText = 'Cargando...';
+  if(!cacheTxt[key]){
+    const url = `${URL_BASE}/${carpeta}/${bookId}.json`;
+    try{
+      let r = await fetch(url);
+      if(r.ok) cacheTxt[key] = await r.json();
+      else { document.getElementById('t_prev').innerText = 'Error ' + r.status; return; }
+    }catch(e){ document.getElementById('t_prev').innerText = 'Error red'; return; }
+  }
+  let total = cacheTxt[key].chapters.length;
+  let sel = document.getElementById('t_cap');
+  let actual = parseInt(sel.value) || 1;
+  sel.innerHTML = '';
+  for(let i = 1; i <= total; i++){
+    let o = document.createElement('option');
+    o.value = i; o.textContent = i;
+    sel.appendChild(o);
+  }
+  sel.value = actual <= total ? actual : 1;
+  previewTxt();
+}
+
+async function previewTxt(){
+  try{
+    const ver = document.getElementById('t_ver').value;
+    const libNum = parseInt(document.getElementById('t_lib').value);
+    const cap = document.getElementById('t_cap').value;
+    const vers = document.getElementById('t_vers').value || "1";
+    const pos = document.getElementById('t_pos').value;
+    const bookId = BOOK_ID[libNum];
+    const key = `${ver}/${bookId}`;
+    if(!cacheTxt[key]) return;
+    let ch = cacheTxt[key].chapters[cap-1];
+    let nums = parseRango(vers);
+    let txt = nums.map(n => `${numSupra(n)} "${(ch[n-1]||'').trim()}"`).join(' ');
+    let libro = bibleBooks.find(b => b.num === libNum).name;
+    let ref = `${libro} ${cap}:${vers}`;
+    let prev = pos === 'antes' ? `(${ref}) ${txt}` :
+               pos === 'despues' ? `${txt} (${ref})` : txt;
+    document.getElementById('t_prev').innerHTML = prev;
+  }catch(e){}
+}
+
+async function insertarTextoBiblia(){
+  const ver = document.getElementById('t_ver').value;
+  const libNum = parseInt(document.getElementById('t_lib').value);
+  const cap = document.getElementById('t_cap').value;
+  const vers = document.getElementById('t_vers').value || "1";
+  const pos = document.getElementById('t_pos').value;
+  const bookId = BOOK_ID[libNum];
+  const key = `${ver}/${bookId}`;
+  if(!cacheTxt[key]) await cargarCapitulos();
+  let ch = cacheTxt[key].chapters[cap-1];
+  let nums = parseRango(vers);
+  let txt = nums.map(n => `${numSupra(n)} "${(ch[n-1]||'').trim()}"`).join(' ');
+  let libro = bibleBooks.find(b => b.num === libNum).name;
+  let ref = `${libro} ${cap}:${vers}`;
+  let fin = pos === 'antes' ? `(${ref}) ${txt} ` :
+            pos === 'despues' ? `${txt} (${ref} ${VERSIONES_TXT[ver]}) ` : txt + ' ';
+  let ta = document.getElementById(targetInput === 'input' ? 'eInputValue' : 'eContent');
+  pushUndo();
+  ta.value = ta.value.slice(0, cursorPos) + fin + ta.value.slice(cursorPos);
+  ta.focus();
+  cerrarModalTexto();
+  toast('Insertado: ' + ref);
+}
+
+document.getElementById('closeBibBtn').addEventListener('click', cerrarModalTexto);
+document.getElementById('cancelBibBtn').addEventListener('click', cerrarModalTexto);
+document.getElementById('bibBg').addEventListener('click', cerrarModalTexto);
+document.getElementById('t_lib').addEventListener('change', cargarCapitulos);
+document.getElementById('t_ver').addEventListener('change', cargarCapitulos);
+document.getElementById('t_cap').addEventListener('change', previewTxt);
+document.getElementById('t_vers').addEventListener('input', previewTxt);
+document.getElementById('t_pos').addEventListener('change', previewTxt);
+document.getElementById('insertBibBtn').addEventListener('click', insertarTextoBiblia);
+/* --Fin-- MODAL TEXTO BÍBLICO */
+
+
+/* =========================================================
+   --Inicio-- MODAL IMPORTAR / MEZCLAR
+   ========================================================= */
+function openImportModal(){
+  const m = document.getElementById('importModal');
+  m.style.display = 'grid';
+  m.classList.add('on');
+  void m.offsetWidth;
+}
+
+function closeImportModal(){
+  const m = document.getElementById('importModal');
+  m.classList.remove('on');
+  m.style.display = '';
+}
+
+document.getElementById('openImportBtn').addEventListener('click', openImportModal);
+document.getElementById('closeImportBtn').addEventListener('click', closeImportModal);
+document.getElementById('cancelImportBtn').addEventListener('click', closeImportModal);
+document.getElementById('importBg').addEventListener('click', closeImportModal);
+
+/* Toggle del resumen colapsable */
+document.getElementById('summaryToggle').addEventListener('click', () => {
+  let det = document.getElementById('importSummaryDetails');
+  let btn = document.getElementById('summaryToggle');
+  det.classList.toggle('on');
+  btn.classList.toggle('open');
+});
+
+/* Botón limpiar caché */
+document.getElementById('clearCacheBtn').addEventListener('click', async () => {
+  if(!confirm('¿Ya exportaste tu archivo?\n\nSe borrará el caché local de IndexedDB. Si no has exportado, perderás los cambios no guardados.')) return;
+  await idbClear();
+  IMPORTED = [];
+  if(S.db){ try{ S.db.close(); }catch(e){} }
+  S.db = null;
+  S.notes = []; S.inputs = []; S.tags = [];
+  S.sessionFiles = [];
+  document.getElementById('expBtn').disabled = true;
+  document.getElementById('fileInfo').textContent = 'notas + InputField + mezcla';
+  renderList();
+  renderImportGrid();
+  closeImportModal();
+  toast('Caché local borrado');
+});
+
+/* Carga de archivos */
+document.getElementById('importFileIn').addEventListener('change', e => {
+  let files = Array.from(e.target.files || []);
+  e.target.value = '';
+  if(files.length) handleImportFiles(files);
+});
+
+let importDrop = document.getElementById('importDrop');
+importDrop.addEventListener('dragover', e => { e.preventDefault(); importDrop.style.borderColor = 'var(--primary)'; });
+importDrop.addEventListener('dragleave', () => importDrop.style.borderColor = '');
+importDrop.addEventListener('drop', e => {
+  e.preventDefault();
+  importDrop.style.borderColor = '';
+  let files = Array.from(e.dataTransfer.files || []);
+  if(files.length) handleImportFiles(files);
+});
+importDrop.addEventListener('click', () => document.getElementById('importFileIn').click());
+
+async function handleImportFiles(fileList){
+  let files = Array.from(fileList || []);
+  if(!files.length) return;
+  showLoad(`Leyendo ${files.length} archivo${files.length!==1?'s':''}...`);
+  for(let file of files){
+    try{
+      let buf = await file.arrayBuffer();
+      let zip = await _JSZIP.loadAsync(buf);
+      let manifest = null;
+      let m = zip.file('manifest.json');
+      if(m){ try{ manifest = JSON.parse(await m.async('string')); }catch(e){} }
+      let entry = zip.file('userData.db') || zip.file('Content/userData.db');
+      if(!entry){ toast(`Sin userData.db en ${file.name}`); continue; }
+      let hasNested = !!zip.file('Content/userData.db');
+      let dbBuf = await entry.async('arraybuffer');
+      let sqlDb = new S.SQL.Database(new Uint8Array(dbBuf));
+      let stats = getStatsFromDb(sqlDb);
+      IMPORTED.push({fileName:file.name, manifest, dbBuffer:dbBuf, sqlDb, stats, hasNested});
+      if(!S.sessionFiles.includes(file.name)) S.sessionFiles.push(file.name);
+    }catch(err){
+      console.error(err);
+      toast(`Error ${file.name}: ${err.message}`);
+    }
+  }
+  renderImportGrid();
+  await saveSnapshot();
+  hideLoad();
+}
+
+function getStatsFromDb(db){
+  const TABLES = ['Location','UserMark','Note','Tag','TagMap','BlockRange','Bookmark','Playlist','PlaylistItem','InputField'];
+  let stats = {};
+  TABLES.forEach(t => {
+    if(!tableExists(db, t)){ stats[t] = 0; return; }
+    try{
+      let r = db.exec(`SELECT COUNT(*) FROM "${t}"`);
+      if(r.length) stats[t] = r[0].values[0][0];
+      else stats[t] = 0;
+    }catch(e){ stats[t] = 0; }
+  });
+  return stats;
+}
+
+function renderImportGrid(){
+  let grid = document.getElementById('importGrid');
+  let empty = document.getElementById('importEmpty');
+  let summary = document.getElementById('importSummary');
+  let btn = document.getElementById('acceptMixBtn');
+  if(!IMPORTED.length){
+    grid.innerHTML = '';
+    empty.style.display = 'block';
+    summary.textContent = '0 archivos cargados';
+    btn.disabled = true;
+    return;
+  }
+  empty.style.display = 'none';
+  grid.innerHTML = IMPORTED.map((it, idx) => {
+    let rows = Object.entries(it.stats)
+      .filter(([k,v]) => v > 0)
+      .map(([k,v]) => {
+        let meta = TABLE_LABELS[k] || { label: k, icon: 'table' };
+        return `<div class="import-stat">
+          <span class="msi sm import-stat-icon">${meta.icon}</span>
+          <div class="import-stat-body">
+            <b>${v}</b>
+            <div class="import-stat-label">${meta.label}</div>
+          </div>
+        </div>`;
+      }).join('');
+    let dbSize = (it.dbBuffer.byteLength/1024).toFixed(0);
+    return `<div class="import-card ${idx===0?'import-card-base':''}">
+      ${idx===0?'<div class="import-base-badge">BASE</div>':''}
+      <h4 class="import-card-title">${esc(it.fileName)}</h4>
+      <div class="import-card-size">${dbSize} KB</div>
+      <div class="import-stats-grid">${rows || '<div class="import-card-empty">Sin datos</div>'}</div>
+    </div>`;
+  }).join('');
+
+  let totals = {};
+  IMPORTED.forEach(it => {
+    Object.entries(it.stats).forEach(([k,v]) => { totals[k] = (totals[k] || 0) + v; });
+  });
+  let parts = Object.entries(totals)
+    .filter(([k,v]) => v > 0)
+    .map(([k,v]) => {
+      let meta = TABLE_LABELS[k] || { label: k };
+      return `${v} ${meta.label.toLowerCase()}`;
+    });
+  let sessionCount = S.sessionFiles.length || IMPORTED.length;
+  let header = `${sessionCount} archivo${sessionCount!==1?'s':''} cargado${sessionCount!==1?'s':''}`;
+  summary.textContent = `${header} • ${parts.join(' · ') || 'sin datos'}`;
+  btn.disabled = false;
+}
+/* --Fin-- MODAL IMPORTAR / MEZCLAR */
+
+
+/* =========================================================
+   --Inicio-- MOTOR DE MERGE
+   ========================================================= */
+function getPkColumn(db, table){
+  try{
+    let r = db.exec(`PRAGMA table_info("${table}")`);
+    if(!r.length) return null;
+    let cols = r[0].values;
+    let pkCols = cols.filter(c => c[5] > 0);
+    if(pkCols.length !== 1) return null;
+    let pk = pkCols[0];
+    if(!/INT/i.test(pk[2] || '')) return null;
+    return pk[1];
+  }catch(e){ return null; }
+}
+
+/* Merge genérico (usado para Tag, Bookmark, etc.) */
+function mergeTable(baseDb, secDb, table, pkCol){
+  try{
+    if(!tableExists(baseDb, table) || !tableExists(secDb, table)) return 0;
+    let info = baseDb.exec(`PRAGMA table_info("${table}")`);
+    if(!info.length) return 0;
+    let baseCols = info[0].values.map(r => r[1]);
+    let data = secDb.exec(`SELECT * FROM "${table}"`);
+    if(!data.length || !data[0].values.length) return 0;
+    let secCols = data[0].columns;
+    let insCols = secCols.filter(c => c !== pkCol && baseCols.includes(c));
+    if(!insCols.length) return 0;
+    let ph = insCols.map(_ => '?').join(',');
+    let sql = `INSERT OR IGNORE INTO "${table}" ("${insCols.join('","')}") VALUES (${ph})`;
+    let idxs = insCols.map(c => secCols.indexOf(c));
+    let stmt = baseDb.prepare(sql);
+    let inserted = 0;
+    for(let row of data[0].values){
+      let vals = idxs.map(i => row[i]);
+      try{ stmt.run(vals); inserted++; }catch(e){}
+    }
+    stmt.free();
+    return inserted;
+  }catch(e){ return 0; }
+}
+
+/* Merge especial para Note + UserMark + Location (remapea IDs) */
+function mergeNotesAndUserMarks(baseDb, secDb){
+  let umMap = new Map();
+  let locMap = new Map();
+
+  // 1) UserMarks
+  if(tableExists(baseDb, 'UserMark') && tableExists(secDb, 'UserMark')){
+    try{
+      let umData = secDb.exec("SELECT * FROM UserMark");
+      if(umData.length){
+        let cols = umData[0].columns;
+        let idIdx = cols.indexOf('UserMarkId');
+        if(idIdx === -1) idIdx = cols.indexOf('UserMarkID');
+        let baseCols = baseDb.exec('PRAGMA table_info("UserMark")')[0].values.map(r => r[1]);
+        let insCols = cols.filter(c => c !== 'UserMarkId' && c !== 'UserMarkID' && baseCols.includes(c));
+        let ph = insCols.map(_ => '?').join(',');
+        let idxs = insCols.map(c => cols.indexOf(c));
+        for(let row of umData[0].values){
+          let oldId = row[idIdx];
+          let vals = idxs.map(i => row[i]);
+          try{
+            baseDb.run(`INSERT INTO UserMark ("${insCols.join('","')}") VALUES (${ph})`, vals);
+            let newId = baseDb.exec("SELECT last_insert_rowid()")[0].values[0][0];
+            umMap.set(oldId, newId);
+          }catch(e){
+            let guidIdx = cols.indexOf('UserMarkGuid');
+            if(guidIdx > -1){
+              let guid = row[guidIdx];
+              let found = baseDb.exec("SELECT UserMarkId FROM UserMark WHERE UserMarkGuid = ?", [guid]);
+              if(found.length && found[0].values.length) umMap.set(oldId, found[0].values[0][0]);
+            }
+          }
+        }
+      }
+    }catch(e){}
+  }
+
+  // 2) Locations
+  if(tableExists(baseDb, 'Location') && tableExists(secDb, 'Location')){
+    try{
+      let locData = secDb.exec("SELECT * FROM Location");
+      if(locData.length){
+        let cols = locData[0].columns;
+        let idIdx = cols.indexOf('LocationId');
+        let baseCols = baseDb.exec('PRAGMA table_info("Location")')[0].values.map(r => r[1]);
+        let insCols = cols.filter(c => c !== 'LocationId' && c !== 'LocationID' && baseCols.includes(c));
+        let ph = insCols.map(_ => '?').join(',');
+        let idxs = insCols.map(c => cols.indexOf(c));
+        for(let row of locData[0].values){
+          let oldId = row[idIdx];
+          let vals = idxs.map(i => row[i]);
+          try{
+            baseDb.run(`INSERT INTO Location ("${insCols.join('","')}") VALUES (${ph})`, vals);
+            let newId = baseDb.exec("SELECT last_insert_rowid()")[0].values[0][0];
+            locMap.set(oldId, newId);
+          }catch(e){}
+        }
+      }
+    }catch(e){}
+  }
+
+  // 3) Notas (reasignando UserMarkId y LocationId nuevos)
+  let insertedNotes = 0;
+  if(tableExists(baseDb, 'Note') && tableExists(secDb, 'Note')){
+    try{
+      let noteData = secDb.exec("SELECT * FROM Note");
+      if(noteData.length){
+        let cols = noteData[0].columns;
+        let umIdx = cols.indexOf('UserMarkId');
+        if(umIdx === -1) umIdx = cols.indexOf('UserMarkID');
+        let locIdx = cols.indexOf('LocationId');
+        if(locIdx === -1) locIdx = cols.indexOf('LocationID');
+        let guidIdx = cols.indexOf('GUID');
+        if(guidIdx === -1) guidIdx = cols.indexOf('Guid');
+        let baseCols = baseDb.exec('PRAGMA table_info("Note")')[0].values.map(r => r[1]);
+        let insCols = cols.filter(c => c !== 'NoteId' && c !== 'NoteID' && baseCols.includes(c));
+        let ph = insCols.map(_ => '?').join(',');
+        let idxs = insCols.map(c => cols.indexOf(c));
+        for(let row of noteData[0].values){
+          let noteGuid = row[guidIdx];
+          if(noteGuid){
+            let exists = baseDb.exec("SELECT 1 FROM Note WHERE GUID = ? OR Guid = ?", [noteGuid, noteGuid]);
+            if(exists.length && exists[0].values.length) continue;
+          }
+          let vals = idxs.map(i => row[i]);
+          let oldUmId = row[umIdx];
+          if(oldUmId != null && umMap.has(oldUmId)){
+            let pos = insCols.indexOf('UserMarkId');
+            if(pos === -1) pos = insCols.indexOf('UserMarkID');
+            if(pos > -1) vals[pos] = umMap.get(oldUmId);
+          }
+          let oldLocId = row[locIdx];
+          if(oldLocId != null && locMap.has(oldLocId)){
+            let pos = insCols.indexOf('LocationId');
+            if(pos === -1) pos = insCols.indexOf('LocationID');
+            if(pos > -1) vals[pos] = locMap.get(oldLocId);
+          }
+          try{
+            baseDb.run(`INSERT INTO Note ("${insCols.join('","')}") VALUES (${ph})`, vals);
+            insertedNotes++;
+          }catch(e){}
+        }
+      }
+    }catch(e){}
+  }
+  return { umMap, locMap, insertedNotes };
+}
+/* --Fin-- MOTOR DE MERGE */
+
+
+/* =========================================================
+   --Inicio-- BOTÓN MEZCLAR (consolida todos los archivos)
+   ========================================================= */
+document.getElementById('acceptMixBtn').addEventListener('click', async () => {
+  if(!IMPORTED.length) return;
+  showLoad('Mezclando...');
+  try{
+    let base = IMPORTED[0];
+    let baseDb = base.sqlDb;
+    const SPECIAL = new Set(['Note', 'UserMark', 'Location']);
+    const ALL_TABLES = ['Location','UserMark','Tag','Note','BlockRange','TagMap','Bookmark','Playlist','PlaylistItem','InputField'];
+    const TABLES = ALL_TABLES.filter(t => tableExists(baseDb, t));
+    let report = {};
+
+    for(let i = 1; i < IMPORTED.length; i++){
+      let secDb = IMPORTED[i].sqlDb;
+      let specialResult = mergeNotesAndUserMarks(baseDb, secDb);
+      if(specialResult.insertedNotes > 0) report['Note'] = (report['Note'] || 0) + specialResult.insertedNotes;
+      for(let t of TABLES){
+        if(SPECIAL.has(t)) continue;
+        let pk = getPkColumn(baseDb, t);
+        let n = mergeTable(baseDb, secDb, t, pk);
+        if(n > 0) report[t] = (report[t] || 0) + n;
+      }
+    }
+
+    for(let i = 1; i < IMPORTED.length; i++){
+      try{ IMPORTED[i].sqlDb.close(); }catch(e){}
+    }
+
+    IMPORTED = [base];
+    base.stats = getStatsFromDb(baseDb);
+    loadFileFromDb(baseDb, base.manifest, base.fileName, base.hasNested);
+    closeImportModal();
+    await saveSnapshot();
+
+    let resumen = Object.entries(report)
+      .filter(([k,v]) => v > 0)
+      .map(([k,v]) => `${v} ${k}`).join(' · ') || 'nada nuevo';
+    toast(`✅ ${resumen}`);
+    renderImportGrid();
+  }catch(err){ console.error(err); toast('Error: ' + err.message); }
+  hideLoad();
+});
+/* --Fin-- BOTÓN MEZCLAR */
+
+
+/* =========================================================
+   --Inicio-- DROP ZONA INICIAL
+   ========================================================= */
+let dz = document.getElementById('dropZ');
+if(dz){
+  dz.addEventListener('dragover', e => e.preventDefault());
+  dz.addEventListener('drop', e => {
+    e.preventDefault();
+    let files = Array.from(e.dataTransfer.files || []);
+    if(files.length){ openImportModal(); handleImportFiles(files); }
+  });
+}
+/* --Fin-- DROP ZONA INICIAL */
+
+
+/* =========================================================
+   --Inicio-- EXPORTAR (todas las tablas tal cual)
+   ========================================================= */
+document.getElementById('expBtn').addEventListener('click', async () => {
+  if(!S.db) return;
+  showLoad('Exportando...');
+  try{
+    let now = isoDate();
+    let data = S.db.export();
+    let hash = '';
+    try{
+      let h = await crypto.subtle.digest('SHA-256', data);
+      hash = Array.from(new Uint8Array(h)).map(b => b.toString(16).padStart(2,'0')).join('');
+    }catch(e){}
+
+    if(S.manifest){
+      let m = JSON.parse(JSON.stringify(S.manifest));
+      if(m.userDataBackup){
+        m.userDataBackup.hash = hash;
+        m.userDataBackup.databaseHash = hash;
+        m.userDataBackup.lastModifiedDate = now;
+      }
+      m.lastModifiedDate = now;
+      m.hash = hash;
+      S.manifest = m;
+    }
+
+    let outer = new _JSZIP();
+    if(S.manifest) outer.file('manifest.json', JSON.stringify(S.manifest));
+    if(S.hasNested) outer.file('Content/userData.db', data);
+    else outer.file('userData.db', data);
+
+    let fin = await outer.generateAsync({type:'uint8array'});
+    let blob = new Blob([fin], {type:'application/octet-stream'});
+    let url = URL.createObjectURL(blob);
+    let a = document.createElement('a');
+    a.href = url;
+    let baseName = (S.fileName || 'backup').replace(/\.jwlibrary$/i, '');
+    let stamp = new Date().toISOString().slice(0,19).replace(/[:T]/g, '-');
+    a.download = `${baseName}_notelink_${stamp}.jwlibrary`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    toast('Exportado');
+  }catch(e){ toast(e.message); }
+  hideLoad();
+});
+/* --Fin-- EXPORTAR */
+
+
+/* =========================================================
+   --Inicio-- MODAL AYUDA
+   ========================================================= */
+function buildHelpTable(){
+  return bibleBooks.map(b => `<tr><td class="bk">${b.name}</td><td class="ab">${b.abbr.join(', ')}</td></tr>`).join('');
+}
+
+function openHelp(){
+  document.getElementById('helpBody').innerHTML = `
+    <div class="help-badge-test"><span class="msi sm">science</span> FASE DE PRUEBAS</div>
+
+    <div class="help-danger">
+      <b>⚠️ Conserva SIEMPRE tu respaldo original</b>
+      JW-Notelink <b>nunca sobrescribe</b> tu archivo original. Cada vez que pulses <b>Exportar</b> se genera un <b>archivo NUEVO</b> con marca de tiempo en el nombre. Aun así, guarda tu propia copia de seguridad antes de trabajar.
+    </div>
+
+    <div class="help-ok">
+      <b>🔗 Herramienta recomendada: JW Sync</b>
+      Para fusionar archivos <code>.jwlibrary</code> de forma segura, visita <b>jwsync.org</b>.
+      <ul>
+        <li><b>Fusión de respaldos:</b> combina varios <code>.jwlibrary</code> en uno sin perder información.</li>
+        <li><b>100% privado:</b> todo ocurre localmente en tu navegador.</li>
+        <li><b>Deduplicación:</b> evita duplicar notas idénticas entre dispositivos.</li>
+        <li><b>Código abierto:</b> verifica su funcionamiento en GitHub.</li>
+        <li><b>Reparar respaldos:</b> comprueba la integridad y limpia datos basura.</li>
+      </ul>
+      <a href="https://jwsync.org/" target="_blank" rel="noopener noreferrer" class="help-link">
+        <span class="msi sm">open_in_new</span> Abrir jwsync.org en nueva pestaña
+      </a>
+    </div>
+
+    <div class="help-ok">
+      <b>✅ ¿Qué hace JW-Notelink?</b>
+      <ul>
+        <li><b>Insertar enlaces bíblicos</b> en Notas e InputField (INLINE o FOOTNOTE).</li>
+        <li><b>Insertar el texto completo</b> de citas bíblicas desde varias traducciones.</li>
+        <li><b>Editar y colorear</b> notas y campos de entrada.</li>
+        <li><b>Fusionar múltiples respaldos</b> en uno (todas las tablas se conservan).</li>
+        <li><b>Filtrar notas por etiquetas</b> y buscar en todo el contenido.</li>
+        <li><b>Caché local (IndexedDB):</b> conserva tu sesión entre visitas.</li>
+        <li><b>Exportar un archivo nuevo</b> sin sobrescribir el original.</li>
+      </ul>
+    </div>
+
+    <div class="help-section">
+      <h3><span class="msi sm">link</span> Cómo escribir las citas</h3>
+      <p>Escribe el libro o su abreviatura, seguido de capítulo y versículo.</p>
+      <div class="help-example">Génesis 1:1
+Gn 1:1,5
+1 Corintios 13:4-8
+Sal 23</div>
+    </div>
+
+    <h3><span class="msi sm">table_chart</span> Abreviaturas aceptadas</h3>
+    <table class="help-table">
+      <thead><tr><th>Libro</th><th>Abrev.</th></tr></thead>
+      <tbody>${buildHelpTable()}</tbody>
+    </table>
+  `;
+  document.getElementById('helpModal').classList.add('on');
+}
+
+function closeHelp(){ document.getElementById('helpModal').classList.remove('on'); }
+document.getElementById('helpBtn').addEventListener('click', openHelp);
+document.getElementById('closeHelpBtn').addEventListener('click', closeHelp);
+document.getElementById('helpBg').addEventListener('click', closeHelp);
+/* --Fin-- MODAL AYUDA */
 </script>
-</body>
 </html>
